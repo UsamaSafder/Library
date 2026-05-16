@@ -199,3 +199,45 @@ loginForm.addEventListener('submit', async function (e) {
             errorBox.classList.add('show');
             showToast('User record not found', 'error');
         }
+    } catch (error) {
+        // Handle Firebase authentication errors
+        let errorMessage = 'An error occurred during login';
+
+        if (error.code === 'auth/user-not-found') {
+            errorMessage = 'No user found with this email address';
+        } else if (error.code === 'auth/wrong-password') {
+            errorMessage = 'Incorrect password. Please try again';
+        } else if (error.code === 'auth/invalid-email') {
+            errorMessage = 'Invalid email address';
+        } else if (error.code === 'auth/user-disabled') {
+            errorMessage = 'This user account has been disabled';
+        } else if (error.code === 'auth/too-many-requests') {
+            errorMessage = 'Too many failed login attempts. Please try again later';
+        } else if (error.code === 'auth/operation-not-allowed') {
+            errorMessage = 'Email/password login is not enabled';
+        }
+
+        errorBox.textContent = errorMessage;
+        errorBox.classList.add('show');
+        showToast(errorMessage, 'error');
+        console.error('Login error:', error);
+    } finally {
+        // Remove loading state
+        loginBtn.classList.remove('loading');
+        loginBtn.disabled = false;
+    }
+});
+
+// ==================== SESSION RECOVERY ====================
+// Check if user is already logged in on page load
+firebase.auth().onAuthStateChanged((user) => {
+    if (user) {
+        // User is already logged in, redirect based on role
+        const role = localStorage.getItem('userRole') || 'member';
+        if (role === 'admin') {
+            window.location.href = 'admin.html';
+        } else {
+            window.location.href = 'catalogue.html';
+        }
+    }
+});
