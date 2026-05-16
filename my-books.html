@@ -1292,8 +1292,22 @@
     <script src="firebase-config.js"></script>
 
     <script>
+        // ==================== AUTH CHECK - REDIRECT TO LOGIN IF NOT AUTHENTICATED ====================
         let currentUser = null;
-        let allBorrowings = [];
+        
+        firebase.auth().onAuthStateChanged((user) => {
+            if (!user) {
+                // User not logged in, redirect to login page
+                window.location.href = 'login.html';
+                return;
+            }
+            // User is logged in, set current user and initialize page
+            currentUser = user;
+            initializePage();
+        });
+
+        // ==================== PAGE INITIALIZATION ====================
+        function initializePage() {
         let currentFilter = 'all';
         let selectedBorrowingId = null;
 
@@ -1638,53 +1652,16 @@
             }, 3500);
         }
 
-        // Robust auth handling: log state and fall back to demo/localStorage session
-        (function initAuth() {
-            console.log('my-books: initAuth', { firebase: typeof firebase !== 'undefined', auth: !!(window.firebase && firebase.auth), db: !!window.db });
-
-            const afterAuthReady = async (userObj) => {
-                currentUser = userObj;
-                if (!currentUser) {
-                    // If there's a demo/session stored user, use it as fallback
-                    const demo = localStorage.getItem('demoMode') === 'true';
-                    const storedId = localStorage.getItem('userId');
-                    const storedEmail = localStorage.getItem('userEmail');
-                    const storedName = localStorage.getItem('userDisplayName');
-                    if (demo && storedId) {
-                        currentUser = { uid: storedId, email: storedEmail, displayName: storedName };
-                    }
-                }
-
-                if (!currentUser) {
-                    console.warn('my-books: no auth user; showing auth guard');
-                    authGuard.style.display = 'flex';
-                    return;
-                }
-
-                authGuard.style.display = 'none';
-                try { updateUserProfile(); } catch (e) { console.error('updateUserProfile failed', e); }
-                try { await loadBorrowings(); } catch (e) { console.error('loadBorrowings failed', e); }
-            };
-
-            if (typeof firebase === 'undefined' || !firebase.auth) {
-                // Firebase not available — try fallback immediately
-                console.warn('my-books: Firebase SDK not available, attempting local/session fallback');
-                afterAuthReady(null);
-                return;
-            }
-
-            // Normal path: listen for auth state
-            firebase.auth().onAuthStateChanged(async (user) => {
-                console.log('my-books: onAuthStateChanged', { userExists: !!user });
-                await afterAuthReady(user);
-            });
-        })();
+        // Initialize page with authenticated user
+        updateUserProfile();
+        loadBorrowings();
 
         logoutBtn.addEventListener('click', () => {
             firebase.auth().signOut().then(() => {
-                window.location.href = 'index.html';
+                window.location.href = 'login.html';
             });
         });
+        }
     </script>
 </body>
 </html>

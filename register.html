@@ -24,6 +24,7 @@
 
         /* ==================== NAVBAR ==================== */
         .navbar {
+            display: none;
             position: sticky;
             top: 0;
             z-index: 1000;
@@ -33,7 +34,6 @@
             box-shadow: 0 4px 30px rgba(102, 126, 234, 0.08);
             height: 75px;
             padding: 0 5%;
-            display: flex;
             justify-content: space-between;
             align-items: center;
         }
@@ -214,7 +214,7 @@
             flex: 1;
             display: grid;
             grid-template-columns: 1fr 1fr;
-            min-height: calc(100vh - 75px);
+            min-height: 100vh;
         }
 
         /* ==================== LEFT PANEL ==================== */
@@ -621,6 +621,20 @@
 
     <script>
 
+        // ==================== SESSION RECOVERY ====================
+        // Check if user is already logged in on page load
+        firebase.auth().onAuthStateChanged((user) => {
+            if (user) {
+                // User is already logged in, redirect based on role
+                const role = localStorage.getItem('userRole') || 'member';
+                if (role === 'admin') {
+                    window.location.href = 'admin.html';
+                } else {
+                    window.location.href = 'catalogue.html';
+                }
+            }
+        });
+
         // Hamburger Menu
         const hamburger = document.getElementById('hamburger');
         const navbarLinks = document.getElementById('navbarLinks');
@@ -724,9 +738,17 @@
                         profileComplete: false
                     });
 
-                    // Registration successful — redirect to login page
-                    window.location.href = 'login.html';
-                    return;
+                    // Store session info
+                    localStorage.setItem('userEmail', emailInput.value);
+                    localStorage.setItem('userRole', 'member');
+                    localStorage.setItem('userDisplayName', fullNameInput.value);
+                    localStorage.setItem('userId', userCredential.user.uid);
+
+                    // Show success message
+                    alert('Account created successfully! You will be redirected to the catalogue.');
+                    
+                    // Redirect to catalogue
+                    window.location.href = 'catalogue.html';
 
                 } catch (error) {
                     console.error('Registration error:', error);
