@@ -1,0 +1,970 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>City Library - Library Management System</title>
+    <link href="https://fonts.googleapis.com/css2?family=Plus+Jakarta+Sans:wght@300;400;500;600;700;800&display=swap" rel="stylesheet">
+    <style>
+        * {
+            margin: 0;
+            padding: 0;
+            box-sizing: border-box;
+        }
+
+        body {
+            font-family: 'Plus Jakarta Sans', sans-serif;
+            background-color: #ffffff;
+            color: #2d3748;
+            line-height: 1.6;
+        }
+
+        /* ==================== MASTER NAVBAR ==================== */
+        .navbar {
+            position: sticky;
+            top: 0;
+            z-index: 1000;
+            background: rgba(255, 255, 255, 0.95);
+            backdrop-filter: blur(20px);
+            border-bottom: 1px solid rgba(102, 126, 234, 0.1);
+            box-shadow: 0 4px 30px rgba(102, 126, 234, 0.08);
+            height: 75px;
+            padding: 0 5%;
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+        }
+
+        .navbar-left {
+            display: flex;
+            align-items: center;
+            gap: 12px;
+        }
+
+        .book-stack-icon {
+            width: 24px;
+            height: 24px;
+            position: relative;
+        }
+
+        .book-stack-icon span {
+            position: absolute;
+            height: 5px;
+            background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
+            transform-origin: center;
+        }
+
+        .book-stack-icon span:nth-child(1) {
+            width: 16px;
+            top: 0;
+            left: 4px;
+            transform: rotate(-15deg);
+        }
+
+        .book-stack-icon span:nth-child(2) {
+            width: 16px;
+            top: 8px;
+            left: 0;
+            transform: rotate(5deg);
+            background: linear-gradient(135deg, #f093fb 0%, #f5576c 100%);
+        }
+
+        .book-stack-icon span:nth-child(3) {
+            width: 16px;
+            top: 16px;
+            left: 4px;
+            transform: rotate(-10deg);
+            background: linear-gradient(135deg, #4facfe 0%, #00f2fe 100%);
+        }
+
+        .navbar-logo {
+            font-size: 24px;
+            font-weight: 800;
+            letter-spacing: -0.5px;
+        }
+
+        .navbar-logo .gradient-text {
+            background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
+            -webkit-background-clip: text;
+            -webkit-text-fill-color: transparent;
+            background-clip: text;
+        }
+
+        .navbar-logo .dark-text {
+            color: #2d3748;
+        }
+
+        .navbar-links {
+            display: flex;
+            list-style: none;
+            gap: 35px;
+            align-items: center;
+        }
+
+        .navbar-links a {
+            text-decoration: none;
+            color: #718096;
+            font-weight: 500;
+            font-size: 15px;
+            position: relative;
+            transition: color 0.3s ease;
+        }
+
+        .navbar-links a:hover {
+            color: #667eea;
+        }
+
+        .navbar-links a.active {
+            color: #667eea;
+        }
+
+        .navbar-links a.active::after {
+            content: '';
+            position: absolute;
+            bottom: -8px;
+            left: 50%;
+            transform: translateX(-50%);
+            width: 6px;
+            height: 6px;
+            background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
+            border-radius: 50%;
+        }
+
+        .navbar-register-btn {
+            background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
+            color: white;
+            padding: 10px 24px;
+            border: none;
+            border-radius: 50px;
+            cursor: pointer;
+            font-weight: 600;
+            font-size: 15px;
+            box-shadow: 0 4px 15px rgba(102, 126, 234, 0.4);
+            transition: all 0.3s ease;
+        }
+
+        .navbar-register-btn:hover {
+            transform: translateY(-2px);
+            box-shadow: 0 8px 30px rgba(102, 126, 234, 0.5);
+        }
+
+        .hamburger {
+            display: none;
+            flex-direction: column;
+            cursor: pointer;
+            gap: 6px;
+        }
+
+        .hamburger span {
+            width: 25px;
+            height: 3px;
+            background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
+            border-radius: 2px;
+            transition: all 0.3s ease;
+        }
+
+        .hamburger.active span:nth-child(1) {
+            transform: rotate(45deg) translate(10px, 10px);
+        }
+
+        .hamburger.active span:nth-child(2) {
+            opacity: 0;
+        }
+
+        .hamburger.active span:nth-child(3) {
+            transform: rotate(-45deg) translate(7px, -7px);
+        }
+
+        @media (max-width: 768px) {
+            .hamburger {
+                display: flex;
+            }
+
+            .navbar-links {
+                display: none;
+                position: absolute;
+                top: 75px;
+                left: 0;
+                right: 0;
+                flex-direction: column;
+                background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
+                padding: 20px;
+                gap: 15px;
+                z-index: 999;
+            }
+
+            .navbar-links.active {
+                display: flex;
+            }
+
+            .navbar-links a {
+                color: white;
+            }
+
+            .navbar-links a.active::after {
+                background: white;
+            }
+
+            .navbar-register-btn {
+                width: 100%;
+                text-align: center;
+            }
+        }
+
+        /* ==================== HERO SECTION ==================== */
+        .hero {
+            padding: 100px 5%;
+            background-color: #ffffff;
+            display: grid;
+            grid-template-columns: 1fr 1fr;
+            gap: 60px;
+            align-items: center;
+        }
+
+        .hero-content h1 {
+            font-size: 48px;
+            font-weight: 800;
+            line-height: 1.2;
+            margin-bottom: 20px;
+            letter-spacing: -0.5px;
+        }
+
+        .hero-highlight {
+            background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
+            -webkit-background-clip: text;
+            -webkit-text-fill-color: transparent;
+            background-clip: text;
+        }
+
+        .hero-content p {
+            font-size: 18px;
+            color: #718096;
+            margin-bottom: 30px;
+            line-height: 1.8;
+        }
+
+        .hero-buttons {
+            display: flex;
+            gap: 20px;
+            flex-wrap: wrap;
+        }
+
+        .btn-primary {
+            background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
+            color: white;
+            padding: 14px 32px;
+            border: none;
+            border-radius: 50px;
+            cursor: pointer;
+            font-weight: 600;
+            font-size: 15px;
+            box-shadow: 0 4px 20px rgba(102, 126, 234, 0.4);
+            transition: all 0.3s ease;
+            text-decoration: none;
+            display: inline-block;
+        }
+
+        .btn-primary:hover {
+            transform: translateY(-3px);
+            box-shadow: 0 8px 30px rgba(102, 126, 234, 0.5);
+        }
+
+        .btn-secondary {
+            background: transparent;
+            border: 2px solid #667eea;
+            color: #667eea;
+            padding: 12px 30px;
+            border-radius: 50px;
+            cursor: pointer;
+            font-weight: 600;
+            font-size: 15px;
+            transition: all 0.3s ease;
+            text-decoration: none;
+            display: inline-block;
+        }
+
+        .btn-secondary:hover {
+            background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
+            color: white;
+            border-color: transparent;
+        }
+
+        .hero-illustration {
+            height: 400px;
+            position: relative;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+        }
+
+        .book-shape {
+            position: absolute;
+            border-radius: 12px;
+        }
+
+        .book-shape-1 {
+            width: 100px;
+            height: 140px;
+            background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
+            top: 20px;
+            left: 40px;
+            animation: float 3s ease-in-out infinite;
+        }
+
+        .book-shape-2 {
+            width: 90px;
+            height: 130px;
+            background: linear-gradient(135deg, #f093fb 0%, #f5576c 100%);
+            top: 80px;
+            right: 50px;
+            animation: float 4s ease-in-out infinite;
+            animation-delay: 0.5s;
+        }
+
+        .book-shape-3 {
+            width: 80px;
+            height: 110px;
+            background: linear-gradient(135deg, #4facfe 0%, #00f2fe 100%);
+            bottom: 30px;
+            left: 80px;
+            animation: float 3.5s ease-in-out infinite;
+            animation-delay: 1s;
+        }
+
+        @keyframes float {
+            0%, 100% {
+                transform: translateY(0);
+            }
+            50% {
+                transform: translateY(-20px);
+            }
+        }
+
+        @media (max-width: 1024px) {
+            .hero {
+                grid-template-columns: 1fr;
+            }
+
+            .hero-illustration {
+                display: none;
+            }
+
+            .hero-content h1 {
+                font-size: 36px;
+            }
+        }
+
+        /* ==================== STATS BAR ==================== */
+        .stats-bar {
+            background-color: #fafbff;
+            padding: 60px 5%;
+            display: grid;
+            grid-template-columns: repeat(4, 1fr);
+            gap: 40px;
+            text-align: center;
+        }
+
+        .stat-item {
+            text-align: center;
+        }
+
+        .stat-number {
+            font-size: 40px;
+            font-weight: 800;
+            background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
+            -webkit-background-clip: text;
+            -webkit-text-fill-color: transparent;
+            background-clip: text;
+            margin-bottom: 8px;
+            letter-spacing: -0.5px;
+        }
+
+        .stat-label {
+            color: #718096;
+            font-size: 15px;
+            font-weight: 500;
+        }
+
+        @media (max-width: 768px) {
+            .stats-bar {
+                grid-template-columns: repeat(2, 1fr);
+                gap: 30px;
+                padding: 40px 5%;
+            }
+        }
+
+        /* ==================== FEATURED BOOKS ==================== */
+        .featured-section {
+            padding: 60px 5%;
+            background-color: #ffffff;
+        }
+
+        .featured-wrapper {
+            max-width: 1400px;
+            margin: 0 auto;
+        }
+
+        .section-heading {
+            font-size: 36px;
+            font-weight: 700;
+            color: #2d3748;
+            margin-bottom: 40px;
+            letter-spacing: -0.5px;
+        }
+
+        .featured-grid {
+            display: grid;
+            grid-template-columns: repeat(3, 1fr);
+            gap: 28px;
+        }
+
+        .book-card {
+            background: #ffffff;
+            border: 1px solid #f0f0f8;
+            border-radius: 20px;
+            box-shadow: 0 8px 32px rgba(102, 126, 234, 0.1);
+            overflow: hidden;
+            transition: all 0.35s cubic-bezier(0.4, 0, 0.2, 1);
+        }
+
+        .book-card:hover {
+            transform: translateY(-6px);
+            box-shadow: 0 20px 60px rgba(102, 126, 234, 0.25);
+        }
+
+        .book-cover {
+            height: 180px;
+            background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            font-size: 80px;
+        }
+
+        .book-info {
+            padding: 24px;
+        }
+
+        .book-title {
+            font-size: 16px;
+            font-weight: 700;
+            color: #2d3748;
+            margin-bottom: 6px;
+        }
+
+        .book-author {
+            font-size: 14px;
+            color: #718096;
+            margin-bottom: 12px;
+        }
+
+        .genre-badge {
+            display: inline-block;
+            padding: 6px 12px;
+            background: #ede9fe;
+            color: #7c3aed;
+            border-radius: 50px;
+            font-size: 12px;
+            font-weight: 600;
+            margin-bottom: 16px;
+        }
+
+        .book-card .btn-primary {
+            width: 100%;
+            text-align: center;
+        }
+
+        @media (max-width: 1024px) {
+            .featured-grid {
+                grid-template-columns: repeat(2, 1fr);
+            }
+        }
+
+        @media (max-width: 768px) {
+            .featured-grid {
+                grid-template-columns: 1fr;
+            }
+
+            .section-heading {
+                font-size: 28px;
+            }
+        }
+
+        /* ==================== HOW IT WORKS ==================== */
+        .how-it-works {
+            padding: 60px 5%;
+            background-color: #fafbff;
+        }
+
+        .how-it-works-wrapper {
+            max-width: 1400px;
+            margin: 0 auto;
+        }
+
+        .steps-grid {
+            display: grid;
+            grid-template-columns: repeat(3, 1fr);
+            gap: 32px;
+            margin-top: 40px;
+        }
+
+        .step-card {
+            text-align: center;
+        }
+
+        .step-number {
+            width: 60px;
+            height: 60px;
+            background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
+            color: white;
+            border-radius: 50%;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            font-size: 24px;
+            font-weight: 700;
+            margin: 0 auto 20px;
+        }
+
+        .step-card h3 {
+            font-size: 20px;
+            font-weight: 700;
+            color: #2d3748;
+            margin-bottom: 12px;
+        }
+
+        .step-card p {
+            color: #718096;
+            font-size: 14px;
+            line-height: 1.6;
+        }
+
+        @media (max-width: 768px) {
+            .steps-grid {
+                grid-template-columns: 1fr;
+            }
+        }
+
+        /* ==================== TESTIMONIALS ==================== */
+        .testimonials {
+            padding: 60px 5%;
+            background-color: #ffffff;
+        }
+
+        .testimonials-wrapper {
+            max-width: 1400px;
+            margin: 0 auto;
+        }
+
+        .testimonials-grid {
+            display: grid;
+            grid-template-columns: repeat(3, 1fr);
+            gap: 28px;
+            margin-top: 40px;
+        }
+
+        .testimonial-card {
+            background: #ffffff;
+            border: 1px solid #f0f0f8;
+            border-radius: 20px;
+            padding: 28px;
+            box-shadow: 0 8px 32px rgba(102, 126, 234, 0.1);
+            transition: all 0.35s cubic-bezier(0.4, 0, 0.2, 1);
+        }
+
+        .testimonial-card:hover {
+            transform: translateY(-6px);
+            box-shadow: 0 20px 60px rgba(102, 126, 234, 0.25);
+        }
+
+        .quote-icon {
+            font-size: 32px;
+            color: #667eea;
+            margin-bottom: 16px;
+        }
+
+        .testimonial-text {
+            color: #718096;
+            font-size: 14px;
+            line-height: 1.8;
+            margin-bottom: 20px;
+            font-style: italic;
+        }
+
+        .testimonial-author {
+            display: flex;
+            align-items: center;
+            gap: 12px;
+        }
+
+        .author-avatar {
+            width: 40px;
+            height: 40px;
+            border-radius: 50%;
+            background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            color: white;
+            font-weight: 700;
+            font-size: 16px;
+        }
+
+        .author-info h4 {
+            font-size: 14px;
+            font-weight: 700;
+            color: #2d3748;
+        }
+
+        .author-info p {
+            font-size: 12px;
+            color: #a0aec0;
+        }
+
+        @media (max-width: 768px) {
+            .testimonials-grid {
+                grid-template-columns: 1fr;
+            }
+        }
+
+        /* ==================== CTA BANNER ==================== */
+        .cta-banner {
+            margin: 60px 5%;
+            padding: 60px;
+            background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
+            border-radius: 20px;
+            text-align: center;
+            color: white;
+        }
+
+        .cta-banner h2 {
+            font-size: 36px;
+            font-weight: 800;
+            margin-bottom: 16px;
+            letter-spacing: -0.5px;
+        }
+
+        .cta-banner p {
+            font-size: 16px;
+            margin-bottom: 32px;
+            opacity: 0.9;
+        }
+
+        .cta-banner .btn-primary {
+            background-color: white;
+            color: #667eea;
+            box-shadow: 0 4px 15px rgba(0, 0, 0, 0.2);
+        }
+
+        .cta-banner .btn-primary:hover {
+            box-shadow: 0 8px 30px rgba(0, 0, 0, 0.3);
+        }
+
+        @media (max-width: 768px) {
+            .cta-banner {
+                margin: 40px 5%;
+                padding: 40px;
+            }
+
+            .cta-banner h2 {
+                font-size: 28px;
+            }
+        }
+
+        /* ==================== FOOTER ==================== */
+        .footer {
+            background-color: #2d3748;
+            color: white;
+            padding: 60px 5% 30px;
+        }
+
+        .footer-wrapper {
+            max-width: 1400px;
+            margin: 0 auto;
+        }
+
+        .footer-top {
+            display: grid;
+            grid-template-columns: repeat(3, 1fr);
+            gap: 60px;
+            margin-bottom: 40px;
+            padding-bottom: 40px;
+            border-bottom: 1px solid rgba(255, 255, 255, 0.1);
+        }
+
+        .footer-col-1 h3 {
+            font-size: 20px;
+            font-weight: 700;
+            margin-bottom: 12px;
+            background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
+            -webkit-background-clip: text;
+            -webkit-text-fill-color: transparent;
+            background-clip: text;
+        }
+
+        .footer-col-1 p {
+            color: #a0aec0;
+            font-size: 14px;
+            line-height: 1.8;
+        }
+
+        .footer-links {
+            list-style: none;
+        }
+
+        .footer-links li {
+            margin-bottom: 12px;
+        }
+
+        .footer-links a {
+            color: #a0aec0;
+            text-decoration: none;
+            font-size: 14px;
+            transition: color 0.3s ease;
+        }
+
+        .footer-links a:hover {
+            color: #ffffff;
+        }
+
+        .footer-col h4 {
+            font-size: 14px;
+            font-weight: 700;
+            margin-bottom: 16px;
+            text-transform: uppercase;
+            letter-spacing: 0.5px;
+            color: white;
+        }
+
+        .footer-info {
+            display: flex;
+            flex-direction: column;
+            gap: 12px;
+        }
+
+        .footer-info-item {
+            color: #a0aec0;
+            font-size: 14px;
+        }
+
+        .footer-bottom {
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+            font-size: 14px;
+            color: #a0aec0;
+        }
+
+        @media (max-width: 1024px) {
+            .footer-top {
+                grid-template-columns: repeat(2, 1fr);
+                gap: 40px;
+            }
+        }
+
+        @media (max-width: 768px) {
+            .footer {
+                padding: 40px 5% 20px;
+            }
+
+            .footer-top {
+                grid-template-columns: 1fr;
+                gap: 32px;
+            }
+
+            .footer-bottom {
+                flex-direction: column;
+                gap: 12px;
+                text-align: center;
+            }
+        }
+    </style>
+</head>
+<body>
+    <!-- NAVBAR -->
+    <nav class="navbar">
+        <div class="navbar-left">
+            <div class="book-stack-icon">
+                <span></span>
+                <span></span>
+                <span></span>
+            </div>
+            <div class="navbar-logo">
+                <span class="gradient-text">City</span>
+                <span class="dark-text">Library</span>
+            </div>
+        </div>
+        <div class="hamburger" id="hamburger">
+            <span></span>
+            <span></span>
+            <span></span>
+        </div>
+        <ul class="navbar-links" id="navbarLinks">
+            <li><a href="index.html" class="active">Home</a></li>
+            <li><a href="catalogue.html">Books</a></li>
+            <li id="loginLink"><a href="login.html">Login</a></li>
+            <li id="registerLink"><a href="register.html" class="navbar-register-btn">Register</a></li>
+            <li id="myBooksLink" style="display: none;"><a href="my-books.html">📖 My Books</a></li>
+        </ul>
+    </nav>
+
+    <!-- HERO SECTION -->
+    <section class="hero">
+        <div class="hero-content">
+            <h1>Your Gateway to <span class="hero-highlight">Unlimited Knowledge</span></h1>
+            <p>Access thousands of books from our extensive collection. Borrow for free and explore endless worlds of imagination and learning.</p>
+            <div class="hero-buttons">
+                <a href="catalogue.html" class="btn-primary">Browse Books</a>
+                <a href="register.html" class="btn-secondary">Get Started</a>
+            </div>
+        </div>
+        <div class="hero-illustration">
+            <div class="book-shape book-shape-1"></div>
+            <div class="book-shape book-shape-2"></div>
+            <div class="book-shape book-shape-3"></div>
+        </div>
+    </section>
+
+    <!-- STATS BAR -->
+    <section class="stats-bar">
+        <div class="stat-item">
+            <div class="stat-number">...</div>
+            <div class="stat-label">Books</div>
+        </div>
+        <div class="stat-item">
+            <div class="stat-number">...</div>
+            <div class="stat-label">Members</div>
+        </div>
+        <div class="stat-item">
+            <div class="stat-number">...</div>
+            <div class="stat-label">Genres</div>
+        </div>
+        <div class="stat-item">
+            <div class="stat-number">∞</div>
+            <div class="stat-label">Free Forever</div>
+        </div>
+    </section>
+
+    <!-- FEATURED BOOKS -->
+    <section class="featured-section">
+        <div class="featured-wrapper">
+            <h2 class="section-heading">Featured Books</h2>
+            <div class="featured-grid">
+                <!-- Featured books will be rendered here by index.js -->
+            </div>
+        </div>
+    </section>
+
+    <!-- HOW IT WORKS -->
+    <section class="how-it-works">
+        <div class="how-it-works-wrapper">
+            <h2 class="section-heading">How It Works</h2>
+            <div class="steps-grid">
+                <div class="step-card">
+                    <div class="step-number">1</div>
+                    <h3>Create Account</h3>
+                    <p>Sign up for free and join our library community in just a few minutes.</p>
+                </div>
+                <div class="step-card">
+                    <div class="step-number">2</div>
+                    <h3>Browse & Select</h3>
+                    <p>Explore our collection and find your next favorite book to read.</p>
+                </div>
+                <div class="step-card">
+                    <div class="step-number">3</div>
+                    <h3>Borrow & Enjoy</h3>
+                    <p>Borrow books for 14 days and enjoy unlimited reading pleasure.</p>
+                </div>
+            </div>
+        </div>
+    </section>
+
+    <!-- TESTIMONIALS -->
+    <section class="testimonials">
+        <div class="testimonials-wrapper">
+            <h2 class="section-heading">What Our Members Say</h2>
+            <div class="testimonials-grid">
+                <div class="testimonial-card">
+                    <div class="quote-icon">"</div>
+                    <p class="testimonial-text">City Library has changed the way I read. The selection is amazing and the borrowing process is so seamless. Highly recommended!</p>
+                    <div class="testimonial-author">
+                        <div class="author-avatar">SM</div>
+                        <div class="author-info">
+                            <h4>Sarah Mitchell</h4>
+                            <p>Book Enthusiast</p>
+                        </div>
+                    </div>
+                </div>
+                <div class="testimonial-card">
+                    <div class="quote-icon">"</div>
+                    <p class="testimonial-text">Finally a library that understands the digital age. Easy to browse, easy to borrow, and so many great books. Love it!</p>
+                    <div class="testimonial-author">
+                        <div class="author-avatar">JD</div>
+                        <div class="author-info">
+                            <h4>John Davis</h4>
+                            <p>Regular Member</p>
+                        </div>
+                    </div>
+                </div>
+                <div class="testimonial-card">
+                    <div class="quote-icon">"</div>
+                    <p class="testimonial-text">The customer service is exceptional and the app is intuitive. This is exactly what libraries should be in 2025.</p>
+                    <div class="testimonial-author">
+                        <div class="author-avatar">EP</div>
+                        <div class="author-info">
+                            <h4>Emily Park</h4>
+                            <p>Student</p>
+                        </div>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </section>
+
+    <!-- CTA BANNER -->
+    <section class="cta-banner">
+        <h2>Ready to Start Reading?</h2>
+        <p>Join thousands of readers who've discovered their next favorite book.</p>
+        <a href="register.html" class="btn-primary">Create Free Account</a>
+    </section>
+
+    <!-- FOOTER -->
+    <footer class="footer">
+        <div class="footer-wrapper">
+            <div class="footer-top">
+                <div class="footer-col-1">
+                    <h3>City Library</h3>
+                    <p>Your gateway to unlimited knowledge and imagination. Discover, borrow, and explore thousands of books across all genres with our free membership.</p>
+                </div>
+                <div class="footer-col">
+                    <h4>Quick Links</h4>
+                    <ul class="footer-links">
+                        <li><a href="index.html">Home</a></li>
+                        <li><a href="catalogue.html">Browse Books</a></li>
+                        <li><a href="login.html">Login</a></li>
+                        <li><a href="register.html">Register</a></li>
+                    </ul>
+                </div>
+                <div class="footer-col">
+                    <h4>Contact</h4>
+                    <div class="footer-info">
+                        <div class="footer-info-item">📍 123 Library Street, City Center</div>
+                        <div class="footer-info-item">📧 support@citylibrary.com</div>
+                        <div class="footer-info-item">📞 (555) 123-4567</div>
+                    </div>
+                </div>
+            </div>
+            <div class="footer-bottom">
+                <div>© 2025 City Library. All rights reserved.</div>
+                <div>Made with ❤️ by City Library</div>
+            </div>
+        </div>
+    </footer>
+
+    <script src="https://www.gstatic.com/firebasejs/10.7.1/firebase-app-compat.js"></script>
+    <script src="https://www.gstatic.com/firebasejs/10.7.1/firebase-auth-compat.js"></script>
+    <script src="https://www.gstatic.com/firebasejs/10.7.1/firebase-firestore-compat.js"></script>
+    <script src="firebase-config.js"></script>
+    <script src="index.js"></script>
+</body>
+</html>

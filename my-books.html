@@ -1,0 +1,1693 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>My Borrowed Books - City Library</title>
+    <link href="https://fonts.googleapis.com/css2?family=Plus+Jakarta+Sans:wght@300;400;500;600;700;800&display=swap" rel="stylesheet">
+    <style>
+        * {
+            margin: 0;
+            padding: 0;
+            box-sizing: border-box;
+        }
+
+        body {
+            font-family: 'Plus Jakarta Sans', sans-serif;
+            background-color: #ffffff;
+            color: #2d3748;
+            line-height: 1.6;
+        }
+
+        /* ==================== NAVBAR ==================== */
+        .navbar {
+            position: sticky;
+            top: 0;
+            z-index: 1000;
+            background: rgba(255, 255, 255, 0.95);
+            backdrop-filter: blur(20px);
+            border-bottom: 1px solid rgba(102, 126, 234, 0.1);
+            box-shadow: 0 4px 30px rgba(102, 126, 234, 0.08);
+            height: 75px;
+            padding: 0 5%;
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+        }
+
+        .navbar-left {
+            display: flex;
+            align-items: center;
+            gap: 12px;
+        }
+
+        .book-stack-icon {
+            width: 24px;
+            height: 24px;
+            position: relative;
+        }
+
+        .book-stack-icon span {
+            position: absolute;
+            height: 5px;
+            background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
+            transform-origin: center;
+        }
+
+        .book-stack-icon span:nth-child(1) {
+            width: 16px;
+            top: 0;
+            left: 4px;
+            transform: rotate(-15deg);
+        }
+
+        .book-stack-icon span:nth-child(2) {
+            width: 16px;
+            top: 8px;
+            left: 0;
+            transform: rotate(5deg);
+            background: linear-gradient(135deg, #f093fb 0%, #f5576c 100%);
+        }
+
+        .book-stack-icon span:nth-child(3) {
+            width: 16px;
+            top: 16px;
+            left: 4px;
+            transform: rotate(-10deg);
+            background: linear-gradient(135deg, #4facfe 0%, #00f2fe 100%);
+        }
+
+        .navbar-logo {
+            font-size: 24px;
+            font-weight: 800;
+            letter-spacing: -0.5px;
+        }
+
+        .navbar-logo .gradient-text {
+            background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
+            -webkit-background-clip: text;
+            -webkit-text-fill-color: transparent;
+            background-clip: text;
+        }
+
+        .navbar-logo .dark-text {
+            color: #2d3748;
+        }
+
+        .navbar-links {
+            display: flex;
+            list-style: none;
+            gap: 35px;
+            align-items: center;
+        }
+
+        .navbar-links a {
+            text-decoration: none;
+            color: #718096;
+            font-weight: 500;
+            font-size: 15px;
+            position: relative;
+            transition: color 0.3s ease;
+        }
+
+        .navbar-links a:hover {
+            color: #667eea;
+        }
+
+        .navbar-links a.active {
+            color: #667eea;
+        }
+
+        .navbar-links a.active::after {
+            content: '';
+            position: absolute;
+            bottom: -8px;
+            left: 50%;
+            transform: translateX(-50%);
+            width: 6px;
+            height: 6px;
+            background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
+            border-radius: 50%;
+        }
+
+        .logout-btn {
+            background: transparent;
+            border: 2px solid #ef4444;
+            color: #ef4444;
+            padding: 8px 20px;
+            border-radius: 50px;
+            cursor: pointer;
+            font-weight: 600;
+            font-size: 15px;
+            transition: all 0.3s ease;
+        }
+
+        .logout-btn:hover {
+            background: #ef4444;
+            color: white;
+        }
+
+        .hamburger {
+            display: none;
+            flex-direction: column;
+            cursor: pointer;
+            gap: 6px;
+        }
+
+        .hamburger span {
+            width: 25px;
+            height: 3px;
+            background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
+            border-radius: 2px;
+            transition: all 0.3s ease;
+        }
+
+        .hamburger.active span:nth-child(1) {
+            transform: rotate(45deg) translate(10px, 10px);
+        }
+
+        .hamburger.active span:nth-child(2) {
+            opacity: 0;
+        }
+
+        .hamburger.active span:nth-child(3) {
+            transform: rotate(-45deg) translate(7px, -7px);
+        }
+
+        @media (max-width: 768px) {
+            .hamburger {
+                display: flex;
+            }
+
+            .navbar-links {
+                display: none;
+                position: absolute;
+                top: 75px;
+                left: 0;
+                right: 0;
+                flex-direction: column;
+                background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
+                padding: 20px;
+                gap: 15px;
+                z-index: 999;
+            }
+
+            .navbar-links.active {
+                display: flex;
+            }
+
+            .navbar-links a {
+                color: white;
+            }
+
+            .navbar-links a.active::after {
+                background: white;
+            }
+        }
+
+        /* ==================== AUTH GUARD OVERLAY ==================== */
+        .auth-guard {
+            position: fixed;
+            top: 0;
+            left: 0;
+            right: 0;
+            bottom: 0;
+            background: rgba(255, 255, 255, 0.98);
+            backdrop-filter: blur(10px);
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            z-index: 2000;
+            flex-direction: column;
+            gap: 20px;
+            text-align: center;
+            padding: 20px;
+        }
+
+        .guard-icon {
+            font-size: 80px;
+            margin-bottom: 20px;
+        }
+
+        .guard-heading {
+            font-size: 32px;
+            font-weight: 800;
+            color: #2d3748;
+            margin-bottom: 12px;
+        }
+
+        .guard-text {
+            font-size: 16px;
+            color: #718096;
+            margin-bottom: 32px;
+            max-width: 400px;
+        }
+
+        .guard-buttons {
+            display: flex;
+            gap: 16px;
+            flex-wrap: wrap;
+            justify-content: center;
+        }
+
+        .btn-primary {
+            background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
+            color: white;
+            padding: 14px 32px;
+            border: none;
+            border-radius: 50px;
+            cursor: pointer;
+            font-weight: 600;
+            font-size: 15px;
+            box-shadow: 0 4px 20px rgba(102, 126, 234, 0.4);
+            transition: all 0.3s ease;
+            text-decoration: none;
+            display: inline-block;
+        }
+
+        .btn-primary:hover {
+            transform: translateY(-3px);
+            box-shadow: 0 8px 30px rgba(102, 126, 234, 0.5);
+        }
+
+        .btn-secondary {
+            background: transparent;
+            border: 2px solid #667eea;
+            color: #667eea;
+            padding: 12px 30px;
+            border-radius: 50px;
+            cursor: pointer;
+            font-weight: 600;
+            font-size: 15px;
+            transition: all 0.3s ease;
+            text-decoration: none;
+            display: inline-block;
+        }
+
+        .btn-secondary:hover {
+            background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
+            color: white;
+            border-color: transparent;
+        }
+
+        /* ==================== PAGE HEADER ==================== */
+        .page-header {
+            background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
+            padding: 60px 5%;
+            color: white;
+            display: grid;
+            grid-template-columns: 1fr auto;
+            gap: 40px;
+            align-items: center;
+        }
+
+        .header-left {
+            display: flex;
+            flex-direction: column;
+            gap: 16px;
+        }
+
+        .header-label {
+            display: flex;
+            align-items: center;
+            gap: 8px;
+            font-size: 14px;
+            font-weight: 600;
+            opacity: 0.9;
+            text-transform: uppercase;
+            letter-spacing: 0.5px;
+        }
+
+        .header-title {
+            font-size: 48px;
+            font-weight: 800;
+            letter-spacing: -0.5px;
+        }
+
+        .header-subtitle {
+            font-size: 16px;
+            opacity: 0.9;
+            max-width: 400px;
+        }
+
+        .header-right {
+            display: flex;
+            flex-direction: column;
+            align-items: center;
+            gap: 12px;
+        }
+
+        .user-avatar {
+            width: 100px;
+            height: 100px;
+            border-radius: 50%;
+            background: white;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            font-size: 36px;
+            font-weight: 800;
+            background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
+            -webkit-background-clip: text;
+            -webkit-text-fill-color: transparent;
+            background-clip: text;
+            color: white;
+            border: 4px solid rgba(255, 255, 255, 0.3);
+        }
+
+        .user-name {
+            font-size: 18px;
+            font-weight: 700;
+            color: white;
+        }
+
+        .user-email {
+            font-size: 14px;
+            opacity: 0.8;
+        }
+
+        .user-since {
+            font-size: 12px;
+            opacity: 0.7;
+        }
+
+        @media (max-width: 1024px) {
+            .page-header {
+                grid-template-columns: 1fr;
+                gap: 30px;
+            }
+
+            .header-right {
+                flex-direction: row;
+                justify-content: center;
+            }
+        }
+
+        /* ==================== STATS ROW ==================== */
+        .stats-row {
+            display: grid;
+            grid-template-columns: repeat(4, 1fr);
+            gap: 20px;
+            padding: 0 5%;
+            margin: -40px auto 60px;
+            max-width: 1400px;
+            position: relative;
+            z-index: 10;
+        }
+
+        .stat-card {
+            background: white;
+            border-radius: 20px;
+            padding: 28px;
+            box-shadow: 0 8px 32px rgba(102, 126, 234, 0.12);
+            border: 1px solid #f0f0f8;
+            display: flex;
+            flex-direction: column;
+            align-items: center;
+            gap: 16px;
+            text-align: center;
+            transition: all 0.35s cubic-bezier(0.4, 0, 0.2, 1);
+        }
+
+        .stat-card:hover {
+            transform: translateY(-6px);
+            box-shadow: 0 20px 60px rgba(102, 126, 234, 0.25);
+        }
+
+        .stat-icon-circle {
+            width: 56px;
+            height: 56px;
+            border-radius: 50%;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            font-size: 28px;
+        }
+
+        .stat-number {
+            font-size: 32px;
+            font-weight: 800;
+            background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
+            -webkit-background-clip: text;
+            -webkit-text-fill-color: transparent;
+            background-clip: text;
+        }
+
+        .stat-label {
+            font-size: 14px;
+            font-weight: 600;
+            color: #718096;
+        }
+
+        .stat-card.warning .stat-icon-circle {
+            background: linear-gradient(135deg, #f59e0b 0%, #f97316 100%);
+            color: white;
+        }
+
+        .stat-card.warning .stat-number {
+            color: #f59e0b;
+            background: none;
+        }
+
+        @media (max-width: 1024px) {
+            .stats-row {
+                grid-template-columns: repeat(2, 1fr);
+                gap: 16px;
+            }
+        }
+
+        @media (max-width: 768px) {
+            .stats-row {
+                grid-template-columns: 1fr;
+                padding: 0 20px;
+                margin-bottom: 40px;
+            }
+        }
+
+        /* ==================== FILTERS TAB ROW ==================== */
+        .filter-tabs {
+            display: flex;
+            gap: 12px;
+            padding: 40px 5%;
+            background-color: #ffffff;
+            justify-content: center;
+            flex-wrap: wrap;
+        }
+
+        .tab-btn {
+            padding: 10px 24px;
+            background: white;
+            border: 2px solid #e8eaf6;
+            border-radius: 50px;
+            cursor: pointer;
+            font-weight: 600;
+            font-size: 14px;
+            color: #718096;
+            transition: all 0.3s ease;
+            display: flex;
+            align-items: center;
+            gap: 8px;
+            position: relative;
+        }
+
+        .tab-btn:hover {
+            border-color: #667eea;
+            color: #667eea;
+        }
+
+        .tab-btn.active {
+            background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
+            color: white;
+            border-color: transparent;
+        }
+
+        .tab-badge {
+            background: #f0f0f8;
+            color: #718096;
+            border-radius: 50%;
+            width: 24px;
+            height: 24px;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            font-size: 12px;
+            font-weight: 700;
+        }
+
+        .tab-btn.active .tab-badge {
+            background: rgba(255, 255, 255, 0.3);
+            color: white;
+        }
+
+        /* ==================== CONTENT SECTION ==================== */
+        .content-section {
+            padding: 0 5% 60px;
+            background-color: #fafbff;
+            min-height: 400px;
+        }
+
+        .section-header {
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+            margin-bottom: 32px;
+        }
+
+        .section-title {
+            display: flex;
+            align-items: center;
+            gap: 12px;
+            font-size: 24px;
+            font-weight: 700;
+            color: #2d3748;
+        }
+
+        .sort-dropdown {
+            padding: 10px 16px;
+            background: white;
+            border: 2px solid #e8eaf6;
+            border-radius: 12px;
+            color: #718096;
+            cursor: pointer;
+            font-weight: 500;
+            transition: all 0.3s ease;
+        }
+
+        .sort-dropdown:hover {
+            border-color: #667eea;
+        }
+
+        /* ==================== BOOK CARDS ==================== */
+        .books-container {
+            display: flex;
+            flex-direction: column;
+            gap: 20px;
+        }
+
+        .book-card {
+            background: white;
+            border-radius: 20px;
+            overflow: hidden;
+            box-shadow: 0 8px 32px rgba(102, 126, 234, 0.12);
+            border: 1px solid #f0f0f8;
+            border-left: 4px solid #10b981;
+            display: grid;
+            grid-template-columns: 200px 1fr 180px;
+            gap: 28px;
+            padding: 24px;
+            transition: all 0.35s cubic-bezier(0.4, 0, 0.2, 1);
+            animation: slideUp 0.6s ease forwards;
+            opacity: 0;
+        }
+
+        @keyframes slideUp {
+            from {
+                opacity: 0;
+                transform: translateY(20px);
+            }
+            to {
+                opacity: 1;
+                transform: translateY(0);
+            }
+        }
+
+        .book-card:hover {
+            transform: translateY(-6px);
+            box-shadow: 0 20px 60px rgba(102, 126, 234, 0.25);
+        }
+
+        .book-card.warning {
+            border-left-color: #f59e0b;
+        }
+
+        .book-card.danger {
+            border-left-color: #ef4444;
+            background: #fef2f2;
+        }
+
+        .book-card.returned {
+            opacity: 0.85;
+            border-left-color: #a0aec0;
+        }
+
+        .book-cover {
+            height: 160px;
+            border-radius: 12px;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            font-size: 60px;
+            color: white;
+        }
+
+        .genre-badge {
+            display: inline-block;
+            padding: 6px 12px;
+            background: #ede9fe;
+            color: #7c3aed;
+            border-radius: 50px;
+            font-size: 12px;
+            font-weight: 600;
+            margin-top: 12px;
+        }
+
+        .book-middle {
+            display: flex;
+            flex-direction: column;
+            gap: 12px;
+        }
+
+        .book-title {
+            font-size: 18px;
+            font-weight: 700;
+            color: #2d3748;
+        }
+
+        .book-author {
+            font-size: 14px;
+            color: #718096;
+        }
+
+        .book-meta {
+            display: flex;
+            align-items: center;
+            gap: 8px;
+            font-size: 14px;
+            color: #718096;
+        }
+
+        .book-meta.overdue {
+            color: #ef4444;
+            font-weight: 600;
+        }
+
+        .book-progress {
+            margin-top: 12px;
+        }
+
+        .progress-label {
+            font-size: 12px;
+            color: #718096;
+            margin-bottom: 6px;
+            font-weight: 600;
+        }
+
+        .progress-bar {
+            height: 6px;
+            background: #f0f0f8;
+            border-radius: 50px;
+            overflow: hidden;
+        }
+
+        .progress-fill {
+            height: 100%;
+            background: linear-gradient(90deg, #43e97b 0%, #38f9d7 100%);
+            transition: all 0.4s ease;
+        }
+
+        .progress-fill.warning {
+            background: linear-gradient(90deg, #f59e0b 0%, #f97316 100%);
+        }
+
+        .progress-fill.danger {
+            background: linear-gradient(90deg, #ef4444 0%, #dc2626 100%);
+        }
+
+        .book-tags {
+            display: flex;
+            gap: 8px;
+            flex-wrap: wrap;
+            margin-top: 12px;
+        }
+
+        .tag {
+            padding: 4px 10px;
+            background: #f0f0f8;
+            color: #718096;
+            border-radius: 12px;
+            font-size: 12px;
+            font-weight: 500;
+        }
+
+        .book-right {
+            display: flex;
+            flex-direction: column;
+            align-items: center;
+            justify-content: space-between;
+        }
+
+        .due-date-display {
+            text-align: center;
+        }
+
+        .due-date-number {
+            font-size: 36px;
+            font-weight: 800;
+            background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
+            -webkit-background-clip: text;
+            -webkit-text-fill-color: transparent;
+            background-clip: text;
+        }
+
+        .due-date-text {
+            font-size: 12px;
+            color: #a0aec0;
+        }
+
+        .days-remaining {
+            margin-top: 16px;
+            padding: 8px 16px;
+            background: #dbeafe;
+            color: #0284c7;
+            border-radius: 50px;
+            font-size: 12px;
+            font-weight: 700;
+        }
+
+        .days-remaining.warning {
+            background: #fed7aa;
+            color: #d97706;
+        }
+
+        .days-remaining.danger {
+            background: #fecaca;
+            color: #dc2626;
+        }
+
+        .return-btn {
+            width: 100%;
+            padding: 12px 16px;
+            background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
+            color: white;
+            border: none;
+            border-radius: 12px;
+            cursor: pointer;
+            font-weight: 600;
+            font-size: 14px;
+            transition: all 0.3s ease;
+            margin-top: 16px;
+        }
+
+        .return-btn:hover {
+            transform: translateY(-2px);
+            box-shadow: 0 4px 15px rgba(102, 126, 234, 0.4);
+        }
+
+        .view-details-link {
+            color: #667eea;
+            text-decoration: none;
+            font-size: 12px;
+            font-weight: 600;
+            margin-top: 8px;
+            transition: color 0.3s ease;
+        }
+
+        .view-details-link:hover {
+            color: #764ba2;
+        }
+
+        .returned-badge {
+            padding: 8px 16px;
+            background: linear-gradient(135deg, #43e97b 0%, #38f9d7 100%);
+            color: white;
+            border-radius: 50px;
+            font-size: 12px;
+            font-weight: 700;
+        }
+
+        /* ==================== EMPTY STATE ==================== */
+        .empty-state {
+            text-align: center;
+            padding: 80px 40px;
+        }
+
+        .empty-icon {
+            font-size: 80px;
+            margin-bottom: 24px;
+        }
+
+        .empty-heading {
+            font-size: 24px;
+            font-weight: 700;
+            color: #2d3748;
+            margin-bottom: 8px;
+        }
+
+        .empty-text {
+            font-size: 16px;
+            color: #718096;
+            margin-bottom: 32px;
+        }
+
+        /* ==================== RETURN MODAL ==================== */
+        .modal-overlay {
+            position: fixed;
+            top: 0;
+            left: 0;
+            right: 0;
+            bottom: 0;
+            background: rgba(0, 0, 0, 0.5);
+            backdrop-filter: blur(4px);
+            display: none;
+            align-items: center;
+            justify-content: center;
+            z-index: 2000;
+        }
+
+        .modal-overlay.active {
+            display: flex;
+        }
+
+        .modal-card {
+            background: white;
+            border-radius: 24px;
+            padding: 40px;
+            max-width: 400px;
+            text-align: center;
+            box-shadow: 0 20px 60px rgba(0, 0, 0, 0.3);
+            animation: modalSlideUp 0.3s ease;
+        }
+
+        @keyframes modalSlideUp {
+            from {
+                opacity: 0;
+                transform: translateY(50px);
+            }
+            to {
+                opacity: 1;
+                transform: translateY(0);
+            }
+        }
+
+        .modal-check-circle {
+            width: 80px;
+            height: 80px;
+            border-radius: 50%;
+            background: linear-gradient(135deg, #43e97b 0%, #38f9d7 100%);
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            font-size: 40px;
+            margin: 0 auto 24px;
+        }
+
+        .modal-heading {
+            font-size: 24px;
+            font-weight: 700;
+            color: #2d3748;
+            margin-bottom: 12px;
+        }
+
+        .modal-book-info {
+            background: #fafbff;
+            padding: 16px;
+            border-radius: 12px;
+            margin-bottom: 24px;
+        }
+
+        .modal-book-title {
+            font-size: 14px;
+            font-weight: 700;
+            color: #2d3748;
+        }
+
+        .modal-book-author {
+            font-size: 12px;
+            color: #718096;
+            margin-top: 4px;
+        }
+
+        .modal-buttons {
+            display: flex;
+            gap: 12px;
+        }
+
+        .modal-btn {
+            flex: 1;
+            padding: 12px 16px;
+            border: none;
+            border-radius: 12px;
+            cursor: pointer;
+            font-weight: 600;
+            font-size: 14px;
+            transition: all 0.3s ease;
+        }
+
+        .modal-btn-confirm {
+            background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
+            color: white;
+        }
+
+        .modal-btn-confirm:hover {
+            transform: translateY(-2px);
+            box-shadow: 0 4px 15px rgba(102, 126, 234, 0.4);
+        }
+
+        .modal-btn-cancel {
+            background: #e8eaf6;
+            color: #718096;
+        }
+
+        .modal-btn-cancel:hover {
+            background: #d8d8e8;
+        }
+
+        /* ==================== TOAST NOTIFICATION ==================== */
+        .toast {
+            position: fixed;
+            bottom: 30px;
+            right: 30px;
+            background: white;
+            border-radius: 16px;
+            padding: 20px;
+            box-shadow: 0 10px 40px rgba(0, 0, 0, 0.15);
+            z-index: 3000;
+            display: none;
+            gap: 12px;
+            align-items: flex-start;
+            max-width: 350px;
+            animation: slideInRight 0.3s ease;
+        }
+
+        @keyframes slideInRight {
+            from {
+                opacity: 0;
+                transform: translateX(120%);
+            }
+            to {
+                opacity: 1;
+                transform: translateX(0);
+            }
+        }
+
+        .toast.show {
+            display: flex;
+        }
+
+        .toast-icon {
+            font-size: 24px;
+            flex-shrink: 0;
+        }
+
+        .toast-content {
+            flex: 1;
+        }
+
+        .toast-title {
+            font-weight: 700;
+            color: #2d3748;
+            margin-bottom: 4px;
+        }
+
+        .toast-message {
+            font-size: 14px;
+            color: #718096;
+        }
+
+        .toast-border {
+            position: absolute;
+            left: 0;
+            top: 0;
+            bottom: 0;
+            width: 4px;
+            border-radius: 16px 0 0 16px;
+        }
+
+        .toast.success {
+            border-left: 4px solid #10b981;
+        }
+
+        /* ==================== FOOTER ==================== */
+        .footer {
+            background-color: #2d3748;
+            color: white;
+            padding: 60px 5% 30px;
+        }
+
+        .footer-wrapper {
+            max-width: 1400px;
+            margin: 0 auto;
+        }
+
+        .footer-top {
+            display: grid;
+            grid-template-columns: repeat(3, 1fr);
+            gap: 60px;
+            margin-bottom: 40px;
+            padding-bottom: 40px;
+            border-bottom: 1px solid rgba(255, 255, 255, 0.1);
+        }
+
+        .footer-col h4 {
+            font-size: 14px;
+            font-weight: 700;
+            margin-bottom: 16px;
+            text-transform: uppercase;
+            letter-spacing: 0.5px;
+            color: white;
+        }
+
+        .footer-links {
+            list-style: none;
+            display: flex;
+            flex-direction: column;
+            gap: 12px;
+        }
+
+        .footer-links a {
+            color: #a0aec0;
+            text-decoration: none;
+            font-size: 14px;
+            transition: color 0.3s ease;
+        }
+
+        .footer-links a:hover {
+            color: white;
+        }
+
+        .footer-bottom {
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+            font-size: 14px;
+            color: #a0aec0;
+        }
+
+        @media (max-width: 1024px) {
+            .footer-top {
+                grid-template-columns: repeat(2, 1fr);
+                gap: 40px;
+            }
+        }
+
+        @media (max-width: 768px) {
+            .page-header {
+                padding: 40px 20px;
+            }
+
+            .header-title {
+                font-size: 32px;
+            }
+
+            .book-card {
+                grid-template-columns: 1fr;
+                gap: 16px;
+                padding: 16px;
+            }
+
+            .book-cover {
+                height: 120px;
+            }
+
+            .book-right {
+                flex-direction: row;
+                justify-content: space-between;
+                align-items: center;
+            }
+
+            .filter-tabs {
+                padding: 20px;
+            }
+
+            .content-section {
+                padding: 0 20px 40px;
+            }
+
+            .footer-top {
+                grid-template-columns: 1fr;
+                gap: 32px;
+            }
+
+            .footer-bottom {
+                flex-direction: column;
+                gap: 12px;
+                text-align: center;
+            }
+        }
+    </style>
+</head>
+<body>
+    <!-- NAVBAR -->
+    <nav class="navbar">
+        <div class="navbar-left">
+            <div class="book-stack-icon">
+                <span></span>
+                <span></span>
+                <span></span>
+            </div>
+            <div class="navbar-logo">
+                <span class="gradient-text">City</span>
+                <span class="dark-text">Library</span>
+            </div>
+        </div>
+        <div class="hamburger" id="hamburger">
+            <span></span>
+            <span></span>
+            <span></span>
+        </div>
+        <ul class="navbar-links" id="navbarLinks">
+            <li><a href="index.html">Home</a></li>
+            <li><a href="catalogue.html">Books</a></li>
+            <li><a href="my-books.html" class="active">My Books</a></li>
+            <li><button class="logout-btn" id="logoutBtn">Logout</button></li>
+        </ul>
+    </nav>
+
+    <!-- AUTH GUARD OVERLAY -->
+    <div class="auth-guard" id="authGuard">
+        <div class="guard-icon">🔒</div>
+        <h2 class="guard-heading">Members Only Area</h2>
+        <p class="guard-text">Please login to view your borrowed books</p>
+        <div class="guard-buttons">
+            <a href="login.html" class="btn-primary">Login Now</a>
+            <a href="register.html" class="btn-secondary">Register Free</a>
+        </div>
+    </div>
+
+    <!-- PAGE HEADER -->
+    <header class="page-header">
+        <div class="header-left">
+            <div class="header-label">
+                <span>📖</span>
+                <span>My Library</span>
+            </div>
+            <h1 class="header-title">My Borrowed Books</h1>
+            <p class="header-subtitle">Track and manage your current borrowings</p>
+        </div>
+        <div class="header-right">
+            <div class="user-avatar" id="userAvatar">JD</div>
+            <div class="user-name" id="userName">John Doe</div>
+            <div class="user-email" id="userEmail">john@example.com</div>
+            <div class="user-since" id="userSince">Member since May 2025</div>
+        </div>
+    </header>
+
+    <!-- STATS ROW -->
+    <div class="stats-row">
+        <div class="stat-card">
+            <div class="stat-icon-circle" style="background: linear-gradient(135deg, #667eea 0%, #764ba2 100%); color: white;">📚</div>
+            <div class="stat-number" id="totalBorrowedCount">0</div>
+            <div class="stat-label">Total Borrowed</div>
+        </div>
+        <div class="stat-card">
+            <div class="stat-icon-circle" style="background: linear-gradient(135deg, #4facfe 0%, #00f2fe 100%); color: white;">📖</div>
+            <div class="stat-number" id="currentlyBorrowedCount">0</div>
+            <div class="stat-label">Currently Borrowed</div>
+        </div>
+        <div class="stat-card">
+            <div class="stat-icon-circle" style="background: linear-gradient(135deg, #43e97b 0%, #38f9d7 100%); color: white;">✓</div>
+            <div class="stat-number" id="returnedCount">0</div>
+            <div class="stat-label">Books Returned</div>
+        </div>
+        <div class="stat-card warning" id="overdueCard">
+            <div class="stat-icon-circle">⚠️</div>
+            <div class="stat-number" id="overdueCount">0</div>
+            <div class="stat-label">Overdue Books</div>
+        </div>
+    </div>
+
+    <!-- FILTER TABS -->
+    <div class="filter-tabs">
+        <button class="tab-btn active" data-filter="all">
+            All Books
+            <span class="tab-badge" id="badgeAll">4</span>
+        </button>
+        <button class="tab-btn" data-filter="borrowed">
+            Currently Borrowed
+            <span class="tab-badge" id="badgeBorrowed">2</span>
+        </button>
+        <button class="tab-btn" data-filter="returned">
+            Returned
+            <span class="tab-badge" id="badgeReturned">1</span>
+        </button>
+        <button class="tab-btn" data-filter="overdue">
+            Overdue
+            <span class="tab-badge" id="badgeOverdue">1</span>
+        </button>
+    </div>
+
+    <!-- CONTENT SECTION -->
+    <section class="content-section">
+        <div style="max-width: 1400px; margin: 0 auto;">
+            <div class="section-header">
+                <h2 class="section-title" id="sectionTitle">All Books</h2>
+                <select class="sort-dropdown" id="sortDropdown">
+                    <option value="due-date">Due Date</option>
+                    <option value="title">Title (A-Z)</option>
+                    <option value="borrow-date">Borrow Date</option>
+                </select>
+            </div>
+
+            <div class="books-container" id="booksContainer">
+                <!-- Books will be loaded here -->
+            </div>
+        </div>
+    </section>
+
+    <!-- RETURN MODAL -->
+    <div class="modal-overlay" id="returnModal">
+        <div class="modal-card">
+            <div class="modal-check-circle">✓</div>
+            <h3 class="modal-heading">Return this book?</h3>
+            <div class="modal-book-info">
+                <div class="modal-book-title" id="modalBookTitle">Book Title</div>
+                <div class="modal-book-author" id="modalBookAuthor">by Author Name</div>
+            </div>
+            <div class="modal-buttons">
+                <button class="modal-btn modal-btn-confirm" id="confirmReturnBtn">Yes, Return Book</button>
+                <button class="modal-btn modal-btn-cancel" id="cancelReturnBtn">Cancel</button>
+            </div>
+        </div>
+    </div>
+
+    <!-- TOAST NOTIFICATION -->
+    <div class="toast" id="toast">
+        <div class="toast-icon" id="toastIcon">✓</div>
+        <div class="toast-content">
+            <div class="toast-title" id="toastTitle">Success</div>
+            <div class="toast-message" id="toastMessage">Book returned successfully</div>
+        </div>
+        <div class="toast-border"></div>
+    </div>
+
+    <!-- FOOTER -->
+    <footer class="footer">
+        <div class="footer-wrapper">
+            <div class="footer-top">
+                <div>
+                    <h4 style="color: white; margin-bottom: 16px;">City Library</h4>
+                    <p style="color: #a0aec0; font-size: 14px; line-height: 1.8;">Your gateway to unlimited knowledge and imagination. Discover, borrow, and explore thousands of books.</p>
+                </div>
+                <div>
+                    <h4>Quick Links</h4>
+                    <ul class="footer-links">
+                        <li><a href="index.html">Home</a></li>
+                        <li><a href="catalogue.html">Browse Books</a></li>
+                        <li><a href="my-books.html">My Books</a></li>
+                    </ul>
+                </div>
+                <div>
+                    <h4>Contact</h4>
+                    <div style="color: #a0aec0; font-size: 14px; display: flex; flex-direction: column; gap: 12px;">
+                        <div>📍 123 Library Street, City Center</div>
+                        <div>📧 support@citylibrary.com</div>
+                        <div>📞 (555) 123-4567</div>
+                    </div>
+                </div>
+            </div>
+            <div class="footer-bottom">
+                <div>© 2025 City Library. All rights reserved.</div>
+                <div>Made with ❤️ by City Library</div>
+            </div>
+        </div>
+    </footer>
+
+    <script src="https://www.gstatic.com/firebasejs/10.7.1/firebase-app-compat.js"></script>
+    <script src="https://www.gstatic.com/firebasejs/10.7.1/firebase-auth-compat.js"></script>
+    <script src="https://www.gstatic.com/firebasejs/10.7.1/firebase-firestore-compat.js"></script>
+    <script src="firebase-config.js"></script>
+
+    <script>
+        let currentUser = null;
+        let allBorrowings = [];
+        let currentFilter = 'all';
+        let selectedBorrowingId = null;
+
+        const authGuard = document.getElementById('authGuard');
+        const hamburger = document.getElementById('hamburger');
+        const navbarLinks = document.getElementById('navbarLinks');
+        const logoutBtn = document.getElementById('logoutBtn');
+        const booksContainer = document.getElementById('booksContainer');
+        const filterButtons = document.querySelectorAll('.tab-btn');
+        const sortDropdown = document.getElementById('sortDropdown');
+        const sectionTitle = document.getElementById('sectionTitle');
+        const returnModal = document.getElementById('returnModal');
+        const confirmReturnBtn = document.getElementById('confirmReturnBtn');
+        const cancelReturnBtn = document.getElementById('cancelReturnBtn');
+        const toast = document.getElementById('toast');
+        const userAvatar = document.getElementById('userAvatar');
+        const userName = document.getElementById('userName');
+        const userEmail = document.getElementById('userEmail');
+        const userSince = document.getElementById('userSince');
+
+        function parseDate(value) {
+            if (!value) return null;
+            if (value instanceof Date) return value;
+            if (typeof value.toDate === 'function') return value.toDate();
+            const date = new Date(value);
+            return isNaN(date.getTime()) ? null : date;
+        }
+
+        function formatDate(value) {
+            const date = parseDate(value);
+            if (!date) return '—';
+            return date.toLocaleDateString('en-US', { year: 'numeric', month: 'short', day: 'numeric' });
+        }
+
+        function clamp(value, fallback = 0) {
+            return Math.max(0, Number(value || fallback));
+        }
+
+        function updateUserProfile() {
+            if (!currentUser) return;
+            const displayName = currentUser.displayName || currentUser.email || 'Library Member';
+            const initials = displayName.split(' ').map(part => part[0]).join('').slice(0, 2).toUpperCase();
+            userAvatar.textContent = initials;
+            userName.textContent = displayName;
+            userEmail.textContent = currentUser.email || 'No email';
+
+            const createdAt = currentUser.createdAt || currentUser.metadata?.creationTime || new Date();
+            const memberSince = formatDate(createdAt);
+            userSince.textContent = `Member since ${memberSince}`;
+        }
+
+        function renderBooks() {
+            let filtered = [...allBorrowings];
+            if (currentFilter !== 'all') {
+                filtered = filtered.filter(item => {
+                    if (currentFilter === 'borrowed') return item.status === 'borrowed';
+                    if (currentFilter === 'returned') return item.status === 'returned';
+                    if (currentFilter === 'overdue') return item.status === 'overdue';
+                });
+            }
+
+            const sortValue = sortDropdown.value;
+            filtered.sort((a, b) => {
+                if (sortValue === 'due-date') {
+                    const aDue = parseDate(a.dueDate);
+                    const bDue = parseDate(b.dueDate);
+                    return (aDue ? aDue.getTime() : 0) - (bDue ? bDue.getTime() : 0);
+                }
+                if (sortValue === 'title') {
+                    return a.bookTitle.localeCompare(b.bookTitle);
+                }
+                const aBorrow = parseDate(a.borrowDate || a.borrowedDate);
+                const bBorrow = parseDate(b.borrowDate || b.borrowedDate);
+                return (bBorrow ? bBorrow.getTime() : 0) - (aBorrow ? aBorrow.getTime() : 0);
+            });
+
+            if (filtered.length === 0) {
+                booksContainer.innerHTML = `
+                    <div class="empty-state">
+                        <div class="empty-icon">${currentFilter === 'overdue' ? '🎉' : currentFilter === 'returned' ? '✅' : currentFilter === 'borrowed' ? '📖' : '📚'}</div>
+                        <h3 class="empty-heading">${currentFilter === 'overdue' ? 'Great! No overdue books' : currentFilter === 'returned' ? 'No returned books yet' : currentFilter === 'borrowed' ? 'No books currently borrowed' : 'No borrowing history yet'}</h3>
+                        <p class="empty-text">${currentFilter === 'overdue' ? 'Keep returning books on time' : currentFilter === 'returned' ? '' : currentFilter === 'borrowed' ? 'You can borrow up to 3 books at a time' : 'Start exploring our collection'}</p>
+                        ${currentFilter === 'all' || currentFilter === 'borrowed' ? `<a href="catalogue.html" class="btn-primary">Browse Books</a>` : ''}
+                    </div>
+                `;
+                return;
+            }
+
+            // Safer DOM-based rendering to avoid nested template pitfalls
+            booksContainer.innerHTML = '';
+            filtered.forEach((book, index) => {
+                const today = new Date();
+                today.setHours(0, 0, 0, 0);
+                const dueDate = parseDate(book.dueDate);
+                if (dueDate) dueDate.setHours(0, 0, 0, 0);
+                const daysRemaining = dueDate ? Math.ceil((dueDate - today) / (1000 * 60 * 60 * 24)) : 0;
+                const borrowDate = parseDate(book.borrowDate || book.borrowedDate);
+                const isOverdue = book.status === 'overdue' || (book.status === 'borrowed' && dueDate && daysRemaining < 0);
+                const isReturned = book.status === 'returned';
+                const daysLabel = dueDate ? (isOverdue ? Math.abs(daysRemaining) + ' days overdue' : Math.max(daysRemaining, 0) + ' days left') : 'No due date';
+                const progressPercent = isReturned ? 100 : (dueDate ? Math.max(0, Math.min(100, (14 - Math.max(0, 14 - daysRemaining)) / 14 * 100)) : 0);
+                const daysRemainingClass = dueDate ? (isOverdue ? 'danger' : (daysRemaining <= 3 ? 'warning' : '')) : '';
+
+                const card = document.createElement('div');
+                card.className = 'book-card';
+                if (isReturned) card.classList.add('returned');
+                if (isOverdue) card.classList.add('danger');
+                if (dueDate && daysRemaining <= 3 && !isOverdue) card.classList.add('warning');
+                card.style.animationDelay = (index * 0.1) + 's';
+
+                const left = document.createElement('div');
+                const cover = document.createElement('div');
+                cover.className = 'book-cover';
+                cover.style.background = 'linear-gradient(135deg, #667eea 0%, #764ba2 100%)';
+                cover.textContent = book.emoji || '📚';
+                const genre = document.createElement('div');
+                genre.className = 'genre-badge';
+                genre.textContent = book.genre || 'Genre';
+                left.appendChild(cover);
+                left.appendChild(genre);
+
+                const middle = document.createElement('div');
+                middle.className = 'book-middle';
+                const title = document.createElement('h3');
+                title.className = 'book-title';
+                title.textContent = book.bookTitle || '';
+                const author = document.createElement('p');
+                author.className = 'book-author';
+                author.textContent = 'by ' + (book.author || 'Unknown');
+                const meta = document.createElement('div');
+                meta.className = 'book-meta';
+                meta.innerHTML = '<span>📅</span> <span>Borrowed: ' + formatDate(borrowDate) + '</span>';
+
+                middle.appendChild(title);
+                middle.appendChild(author);
+                middle.appendChild(meta);
+
+                if (isReturned) {
+                    const returnedMeta = document.createElement('div');
+                    returnedMeta.className = 'book-meta';
+                    returnedMeta.innerHTML = '<span>✓</span> <span>Returned: ' + formatDate(book.returnDate) + '</span>';
+                    middle.appendChild(returnedMeta);
+                } else {
+                    const dueWrap = document.createElement('div');
+                    dueWrap.className = 'book-meta' + (isOverdue ? ' overdue' : '');
+                    dueWrap.innerHTML = '<span>' + (isOverdue ? '🚨' : '🕐') + '</span> <span>' + (isOverdue ? ('OVERDUE by ' + Math.abs(daysRemaining) + ' days') : ('Due: ' + formatDate(dueDate))) + '</span>';
+                    const prog = document.createElement('div');
+                    prog.className = 'book-progress';
+                    prog.innerHTML = '<div class="progress-label">' + (isOverdue ? Math.abs(daysRemaining) + ' days overdue' : daysLabel) + '</div><div class="progress-bar"><div class="progress-fill ' + (isOverdue ? 'danger' : (daysRemaining <= 3 ? 'warning' : '')) + '" style="width: ' + Math.min(100, Math.max(0, progressPercent)) + '%"></div></div>';
+                    middle.appendChild(dueWrap);
+                    middle.appendChild(prog);
+                }
+
+                const tags = document.createElement('div');
+                tags.className = 'book-tags';
+                const tag1 = document.createElement('span'); tag1.className = 'tag'; tag1.textContent = '📖 ' + (book.genre || 'Genre');
+                const tag2 = document.createElement('span'); tag2.className = 'tag'; tag2.textContent = '✍️ ' + ((book.author && book.author.split ? book.author.split(' ')[0] : book.author) || 'Author');
+                tags.appendChild(tag1); tags.appendChild(tag2);
+                middle.appendChild(tags);
+
+                const right = document.createElement('div');
+                right.className = 'book-right';
+                if (isReturned) {
+                    const returnedBadge = document.createElement('div'); returnedBadge.className = 'returned-badge'; returnedBadge.textContent = '✓ Returned';
+                    right.appendChild(returnedBadge);
+                } else {
+                    const dueDisplay = document.createElement('div'); dueDisplay.className = 'due-date-display';
+                    dueDisplay.innerHTML = '<div class="due-date-number">' + Math.abs(daysRemaining) + '</div><div class="due-date-text">' + (isOverdue ? 'days overdue' : 'days left') + '</div>';
+                    const daysRem = document.createElement('div'); daysRem.className = 'days-remaining ' + daysRemainingClass; daysRem.textContent = (isOverdue ? Math.abs(daysRemaining) + ' days overdue' : (daysRemaining <= 3 ? 'Due soon!' : daysRemaining + ' days left'));
+                    right.appendChild(dueDisplay); right.appendChild(daysRem);
+                }
+
+                if (!isReturned) {
+                    const returnBtn = document.createElement('button');
+                    returnBtn.className = 'return-btn';
+                    returnBtn.dataset.id = book.id;
+                    returnBtn.dataset.title = encodeURIComponent(book.bookTitle || '');
+                    returnBtn.dataset.author = encodeURIComponent(book.author || '');
+                    returnBtn.textContent = 'Return Book';
+                    right.appendChild(returnBtn);
+
+                    const viewLink = document.createElement('a');
+                    viewLink.href = 'book-detail.html?id=' + encodeURIComponent(book.bookId || '');
+                    viewLink.className = 'view-details-link';
+                    viewLink.textContent = 'View Details →';
+                    right.appendChild(viewLink);
+                } else {
+                    const againBtn = document.createElement('button');
+                    againBtn.className = 'return-btn';
+                    againBtn.style.background = '#e8eaf6';
+                    againBtn.style.color = '#718096';
+                    againBtn.textContent = 'Borrow Again';
+                    right.appendChild(againBtn);
+                }
+
+                card.appendChild(left);
+                card.appendChild(middle);
+                card.appendChild(right);
+                booksContainer.appendChild(card);
+            });
+        }
+
+        async function loadBorrowings() {
+            if (!currentUser) return;
+            try {
+                const snapshot = await db.collection('borrowings').where('userId', '==', currentUser.uid).get();
+                allBorrowings = await Promise.all(snapshot.docs.map(async doc => {
+                    const borrow = { id: doc.id, ...doc.data() };
+                    if (!borrow.bookTitle || !borrow.author) {
+                        const bookDoc = await db.collection('books').doc(String(borrow.bookId)).get();
+                        if (bookDoc.exists) {
+                            const book = bookDoc.data();
+                            borrow.bookTitle = borrow.bookTitle || book.title;
+                            borrow.author = borrow.author || book.author;
+                            borrow.genre = borrow.genre || book.genre;
+                            borrow.emoji = borrow.emoji || book.emoji;
+                        }
+                    }
+                    return borrow;
+                }));
+                updateStats();
+                renderBooks();
+            } catch (error) {
+                console.error('Failed to load borrowings', error);
+                booksContainer.innerHTML = `<div class="empty-state"><div class="empty-icon">⚠️</div><h3 class="empty-heading">Unable to load borrowings.</h3><p>Please refresh the page.</p></div>`;
+            }
+        }
+
+        function updateStats() {
+            const totalBorrowed = allBorrowings.length;
+            const currently = allBorrowings.filter(b => b.status === 'borrowed').length;
+            const returned = allBorrowings.filter(b => b.status === 'returned').length;
+            const overdue = allBorrowings.filter(b => {
+                if (b.status === 'overdue') return true;
+                if (b.status === 'borrowed') {
+                    const due = parseDate(b.dueDate);
+                    return due ? due < new Date() : false;
+                }
+                return false;
+            }).length;
+
+            document.getElementById('totalBorrowedCount').textContent = totalBorrowed;
+            document.getElementById('currentlyBorrowedCount').textContent = currently;
+            document.getElementById('returnedCount').textContent = returned;
+            document.getElementById('overdueCount').textContent = overdue;
+            document.getElementById('badgeAll').textContent = totalBorrowed;
+            document.getElementById('badgeBorrowed').textContent = currently;
+            document.getElementById('badgeReturned').textContent = returned;
+            document.getElementById('badgeOverdue').textContent = overdue;
+            if (overdue > 0) {
+                document.getElementById('overdueCard').classList.add('warning');
+            } else {
+                document.getElementById('overdueCard').classList.remove('warning');
+            }
+        }
+
+        function openReturnModal(id, title, author) {
+            selectedBorrowingId = id;
+            document.getElementById('modalBookTitle').textContent = title;
+            document.getElementById('modalBookAuthor').textContent = `by ${author}`;
+            returnModal.classList.add('active');
+        }
+
+        function closeReturnModal() {
+            returnModal.classList.remove('active');
+            selectedBorrowingId = null;
+        }
+
+        async function confirmReturn() {
+            if (!selectedBorrowingId) return;
+            try {
+                const borrowingRef = db.collection('borrowings').doc(selectedBorrowingId);
+                const borrowingDoc = await borrowingRef.get();
+                if (!borrowingDoc.exists) return;
+                const borrowing = borrowingDoc.data();
+                await borrowingRef.update({
+                    status: 'returned',
+                    returnDate: firebase.firestore.Timestamp.fromDate(new Date()),
+                    updatedAt: firebase.firestore.FieldValue.serverTimestamp()
+                });
+                if (borrowing.bookId) {
+                    const bookRef = db.collection('books').doc(String(borrowing.bookId));
+                    await bookRef.update({
+                        available: firebase.firestore.FieldValue.increment(1)
+                    });
+                }
+                closeReturnModal();
+                await loadBorrowings();
+                showToast('Book returned successfully!');
+            } catch (error) {
+                console.error('Return failed', error);
+                showToast('Return failed', 'error');
+            }
+        }
+
+        filterButtons.forEach(btn => {
+            btn.addEventListener('click', () => {
+                filterButtons.forEach(b => b.classList.remove('active'));
+                btn.classList.add('active');
+                currentFilter = btn.dataset.filter;
+                const titles = {
+                    all: 'All Books',
+                    borrowed: 'Currently Borrowed',
+                    returned: 'Returned Books',
+                    overdue: 'Overdue Books'
+                };
+                sectionTitle.textContent = titles[currentFilter];
+                renderBooks();
+            });
+        });
+
+        sortDropdown.addEventListener('change', renderBooks);
+
+        hamburger.addEventListener('click', () => {
+            hamburger.classList.toggle('active');
+            navbarLinks.classList.toggle('active');
+        });
+
+        document.querySelectorAll('.navbar-links a').forEach(link => {
+            link.addEventListener('click', () => {
+                hamburger.classList.remove('active');
+                navbarLinks.classList.remove('active');
+            });
+        });
+
+        // Delegated handler for return buttons (uses data attributes to avoid inline JS)
+        booksContainer.addEventListener('click', (e) => {
+            const btn = e.target.closest('.return-btn');
+            if (!btn) return;
+            const id = btn.dataset.id;
+            const title = decodeURIComponent(btn.dataset.title || '');
+            const author = decodeURIComponent(btn.dataset.author || '');
+            openReturnModal(id, title, author);
+        });
+
+        confirmReturnBtn.addEventListener('click', confirmReturn);
+        cancelReturnBtn.addEventListener('click', closeReturnModal);
+        returnModal.addEventListener('click', (e) => {
+            if (e.target === returnModal) closeReturnModal();
+        });
+
+        function showToast(message, type = 'success') {
+            document.getElementById('toastTitle').textContent = type === 'success' ? 'Success!' : 'Error';
+            document.getElementById('toastMessage').textContent = message;
+            document.getElementById('toastIcon').textContent = type === 'success' ? '✓' : '✕';
+            toast.classList.add('show');
+            setTimeout(() => {
+                toast.classList.remove('show');
+            }, 3500);
+        }
+
+        // Robust auth handling: log state and fall back to demo/localStorage session
+        (function initAuth() {
+            console.log('my-books: initAuth', { firebase: typeof firebase !== 'undefined', auth: !!(window.firebase && firebase.auth), db: !!window.db });
+
+            const afterAuthReady = async (userObj) => {
+                currentUser = userObj;
+                if (!currentUser) {
+                    // If there's a demo/session stored user, use it as fallback
+                    const demo = localStorage.getItem('demoMode') === 'true';
+                    const storedId = localStorage.getItem('userId');
+                    const storedEmail = localStorage.getItem('userEmail');
+                    const storedName = localStorage.getItem('userDisplayName');
+                    if (demo && storedId) {
+                        currentUser = { uid: storedId, email: storedEmail, displayName: storedName };
+                    }
+                }
+
+                if (!currentUser) {
+                    console.warn('my-books: no auth user; showing auth guard');
+                    authGuard.style.display = 'flex';
+                    return;
+                }
+
+                authGuard.style.display = 'none';
+                try { updateUserProfile(); } catch (e) { console.error('updateUserProfile failed', e); }
+                try { await loadBorrowings(); } catch (e) { console.error('loadBorrowings failed', e); }
+            };
+
+            if (typeof firebase === 'undefined' || !firebase.auth) {
+                // Firebase not available — try fallback immediately
+                console.warn('my-books: Firebase SDK not available, attempting local/session fallback');
+                afterAuthReady(null);
+                return;
+            }
+
+            // Normal path: listen for auth state
+            firebase.auth().onAuthStateChanged(async (user) => {
+                console.log('my-books: onAuthStateChanged', { userExists: !!user });
+                await afterAuthReady(user);
+            });
+        })();
+
+        logoutBtn.addEventListener('click', () => {
+            firebase.auth().signOut().then(() => {
+                window.location.href = 'index.html';
+            });
+        });
+    </script>
+</body>
+</html>

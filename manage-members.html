@@ -1,0 +1,632 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Manage Members - City Library</title>
+    <link rel="preconnect" href="https://fonts.googleapis.com">
+    <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+    <link href="https://fonts.googleapis.com/css2?family=Plus+Jakarta+Sans:wght@300;400;500;600;700;800&display=swap" rel="stylesheet">
+    <link rel="stylesheet" href="shared.css">
+    <link rel="stylesheet" href="manage-members.css">
+</head>
+<body>
+    <!-- Page Loader -->
+    <div id="pageLoader" class="page-loader">
+        <div class="spinner"></div>
+    </div>
+
+    <!-- Firebase CDN Scripts -->
+    <script src="https://www.gstatic.com/firebasejs/10.7.1/firebase-app-compat.js"></script>
+    <script src="https://www.gstatic.com/firebasejs/10.7.1/firebase-auth-compat.js"></script>
+    <script src="https://www.gstatic.com/firebasejs/10.7.1/firebase-firestore-compat.js"></script>
+    <script src="firebase-config.js"></script>
+
+    <!-- ==================== SIDEBAR ==================== -->
+    <div class="sidebar" id="sidebar">
+        <a href="admin.html" class="sidebar-logo">
+            <div class="book-stack-icon">
+                <span></span>
+                <span></span>
+                <span></span>
+            </div>
+            <span>City<strong>Library</strong></span>
+        </a>
+
+        <div class="sidebar-user">
+            <div class="user-avatar" id="userAvatar">A</div>
+            <div class="user-info">
+                <div class="user-name" id="userName">Admin User</div>
+                <div class="user-badge">Administrator</div>
+            </div>
+            <span id="adminInitials" style="display:none"></span>
+        </div>
+
+        <nav class="sidebar-menu">
+            <div class="menu-section">
+                <div class="menu-label">Main</div>
+                <ul>
+                    <li><a href="admin.html" class="menu-item">📊 Dashboard</a></li>
+                    <li><a href="manage-books.html" class="menu-item">📚 Manage Books</a></li>
+                    <li><a href="manage-members.html" class="menu-item active">👥 Manage Members</a></li>
+                </ul>
+            </div>
+            <div class="menu-section">
+                <div class="menu-label">Operations</div>
+                <ul>
+                    <li><a href="borrowings.html" class="menu-item">📋 Borrowings</a></li>
+                    <li><a href="reports.html" class="menu-item">📈 Reports</a></li>
+                </ul>
+            </div>
+            <div class="menu-section">
+                <div class="menu-label">Account</div>
+                <ul>
+                    <li><a href="index.html" class="menu-item">🏠 View Site</a></li>
+                    <li><a href="#" class="menu-item" id="logoutBtn">🚪 Logout</a></li>
+                </ul>
+            </div>
+        </nav>
+
+        <button class="sidebar-close" id="sidebarClose">✕</button>
+        <div class="sidebar-bottom">
+            <div class="version-text">City Library v1.0</div>
+        </div>
+    </div>
+
+    <div class="sidebar-overlay" id="sidebarOverlay"></div>
+
+    <!-- ==================== TOP BAR ==================== -->
+    <div class="top-bar">
+        <div class="top-bar-left">
+            <button class="hamburger" id="hamburger">
+                <span></span>
+                <span></span>
+                <span></span>
+            </button>
+            <div class="page-title">Manage Members</div>
+        </div>
+
+        <div class="top-bar-right">
+            <div class="search-box">
+                <span class="search-icon">🔍</span>
+                <input type="text" placeholder="Quick search...">
+            </div>
+
+            <div class="notification-bell">
+                <button class="bell-icon" id="notificationBell">🔔</button>
+                <span class="notification-badge" id="notificationBadge">3</span>
+                <div class="notification-dropdown" id="notificationDropdown" style="display: none;">
+                    <div class="dropdown-header">Notifications</div>
+                    <div class="notification-list">
+                        <div class="notification-item">
+                            <div class="notification-title">New Member</div>
+                            <div class="notification-text">Grace Kim joined the library</div>
+                        </div>
+                        <div class="notification-item">
+                            <div class="notification-title">Overdue Books</div>
+                            <div class="notification-text">2 members have overdue books</div>
+                        </div>
+                        <div class="notification-item">
+                            <div class="notification-title">Member Joined</div>
+                            <div class="notification-text">5 new members this month</div>
+                        </div>
+                    </div>
+                    <div class="dropdown-footer">
+                        <button class="dropdown-item">Mark all as read</button>
+                    </div>
+                </div>
+            </div>
+
+            <div class="admin-menu">
+                <button class="admin-avatar" id="adminAvatarBtn">A</button>
+                <div class="admin-dropdown" id="adminDropdown" style="display: none;">
+                    <a href="#" class="dropdown-item">👤 Profile</a>
+                    <a href="#" class="dropdown-item">⚙️ Settings</a>
+                    <hr>
+                    <button class="dropdown-item logout-link" id="logoutDropdown">🚪 Logout</button>
+                </div>
+            </div>
+        </div>
+    </div>
+
+    <!-- ==================== MAIN CONTENT ==================== -->
+    <div class="main-content">
+        <div class="page-content">
+            <!-- PAGE HEADER -->
+            <div class="page-header-row">
+                <div class="header-left">
+                    <div class="breadcrumb">Dashboard → Manage Members</div>
+                    <h1>Manage Members</h1>
+                    <p class="header-subtext">View and manage all registered library members</p>
+                </div>
+                <div class="header-buttons">
+                    <button class="btn btn-secondary" id="exportMembersBtn">📤 Export Members</button>
+                    <button class="btn btn-primary" id="addMemberBtn">➕ Add Member</button>
+                </div>
+            </div>
+
+            <!-- STATS CARDS ROW -->
+            <div class="stats-cards-row">
+                <div class="stat-card">
+                    <div class="stat-icon-circle primary">👥</div>
+                    <div class="stat-info">
+                        <div class="stat-number" id="totalMembersCount">24</div>
+                        <div class="stat-label">Total Members</div>
+                        <div class="stat-change positive">+3 this month</div>
+                    </div>
+                </div>
+
+                <div class="stat-card">
+                    <div class="stat-icon-circle success">✅</div>
+                    <div class="stat-info">
+                        <div class="stat-number green" id="activeBorrowersCount">8</div>
+                        <div class="stat-label">Active Borrowers</div>
+                        <div class="stat-subtext">Currently borrowing</div>
+                    </div>
+                </div>
+
+                <div class="stat-card">
+                    <div class="stat-icon-circle accent">🆕</div>
+                    <div class="stat-info">
+                        <div class="stat-number blue" id="newThisMonthCount">3</div>
+                        <div class="stat-label">New This Month</div>
+                        <div class="stat-subtext">Joined recently</div>
+                    </div>
+                </div>
+
+                <div class="stat-card">
+                    <div class="stat-icon-circle danger">⚠️</div>
+                    <div class="stat-info">
+                        <div class="stat-number red" id="overdueCount">2</div>
+                        <div class="stat-label">Have Overdue Books</div>
+                        <div class="stat-subtext need-attention">Need attention</div>
+                    </div>
+                </div>
+            </div>
+
+            <!-- SEARCH AND FILTER TOOLBAR -->
+            <div class="filter-toolbar">
+                <div class="filter-row-1">
+                    <div class="search-input-wrapper">
+                        <span class="search-icon">🔍</span>
+                        <input type="text" id="searchInput" placeholder="Search by name, email or member ID..." class="search-input">
+                    </div>
+
+                    <select id="statusFilter" class="filter-select">
+                        <option value="">All Members</option>
+                        <option value="active">Active</option>
+                        <option value="overdue">Has Overdue</option>
+                        <option value="no-borrowings">No Borrowings</option>
+                    </select>
+
+                    <select id="sortSelect" class="filter-select">
+                        <option value="newest">Newest First</option>
+                        <option value="oldest">Oldest First</option>
+                        <option value="nameAz">Name A-Z</option>
+                        <option value="nameZa">Name Z-A</option>
+                        <option value="mostBorrowed">Most Borrowed</option>
+                    </select>
+                </div>
+
+                <div class="filter-row-2">
+                    <div class="results-count">Showing <span id="resultsCount">7</span> of <span id="totalCount">24</span> members</div>
+                    <div class="view-toggle">
+                        <button class="view-btn active" id="tableViewBtn" data-view="table">📊 Table</button>
+                        <button class="view-btn" id="cardViewBtn" data-view="card">📇 Card</button>
+                    </div>
+                </div>
+            </div>
+
+            <!-- MEMBERS TABLE VIEW -->
+            <div class="table-view-container" id="tableViewContainer">
+                <div class="table-card">
+                    <div class="table-wrapper">
+                        <table class="data-table">
+                            <thead>
+                                <tr>
+                                    <th style="width: 50px;">
+                                        <input type="checkbox" id="selectAllCheckbox" class="custom-checkbox">
+                                    </th>
+                                    <th>Member</th>
+                                    <th style="width: 200px;">Email</th>
+                                    <th style="width: 100px;">Member ID</th>
+                                    <th style="width: 100px;">Joined</th>
+                                    <th style="width: 120px;">Books Borrowed</th>
+                                    <th style="width: 100px;">Status</th>
+                                    <th style="width: 120px;">Actions</th>
+                                </tr>
+                            </thead>
+                            <tbody id="membersTableBody">
+                                <!-- Populated by JavaScript -->
+                            </tbody>
+                        </table>
+                    </div>
+
+                    <!-- Bulk Actions Bar -->
+                    <div class="bulk-actions-bar" id="bulkActionsBar" style="display: none;">
+                        <div class="bulk-info">
+                            <span id="bulkCount">0</span> members selected
+                        </div>
+                        <div class="bulk-buttons">
+                            <button class="btn btn-warning" id="bulkNoticeBtn">📧 Send Notice</button>
+                            <button class="btn btn-danger" id="bulkDeleteBtn">🗑️ Delete Selected</button>
+                            <button class="btn-link" id="clearSelectBtn">Clear</button>
+                        </div>
+                    </div>
+
+                    <!-- Pagination -->
+                    <div class="table-pagination">
+                        <div class="pagination-info">Showing <span id="paginationStart">1</span>-<span id="paginationEnd">10</span> of <span id="paginationTotal">24</span> members</div>
+                        <div class="pagination-numbers" id="paginationNumbers">
+                            <!-- Generated by JavaScript -->
+                        </div>
+                        <div class="pagination-select">
+                            <select id="perPageSelect">
+                                <option value="10">10 per page</option>
+                                <option value="25">25 per page</option>
+                                <option value="50">50 per page</option>
+                            </select>
+                        </div>
+                    </div>
+                </div>
+            </div>
+
+            <!-- MEMBERS GRID VIEW -->
+            <div class="grid-view-container" id="gridViewContainer" style="display: none;">
+                <div class="members-grid" id="membersGrid">
+                    <!-- Populated by JavaScript -->
+                </div>
+            </div>
+
+            <!-- OVERDUE SECTION -->
+            <div class="overdue-section" id="overdueSection" style="display: none; margin-top: 28px;">
+                <div class="overdue-card">
+                    <div class="overdue-header">
+                        <h3>⚠️ Members with Overdue Books <span class="overdue-badge" id="overdueCountBadge">2</span></h3>
+                        <button class="btn btn-warning" id="sendAllRemindersBtn">Send All Reminders</button>
+                    </div>
+                    <div class="overdue-list" id="overdueList">
+                        <!-- Populated by JavaScript -->
+                    </div>
+                </div>
+            </div>
+        </div>
+    </div>
+
+    <!-- ==================== MODALS ==================== -->
+
+    <!-- MEMBER DETAIL MODAL -->
+    <div class="modal-overlay" id="memberDetailOverlay" style="display: none;">
+        <div class="modal-card modal-large">
+            <div class="modal-detail-header">
+                <div class="header-gradient"></div>
+                <div class="detail-header-content">
+                    <div class="detail-avatar" id="detailAvatar">A</div>
+                    <div class="detail-member-info">
+                        <h2 id="detailName">Member Name</h2>
+                        <p id="detailEmail">email@example.com</p>
+                    </div>
+                    <button class="modal-close" id="closeDetailBtn">✕</button>
+                </div>
+            </div>
+
+            <!-- Tabs -->
+            <div class="detail-tabs">
+                <button class="detail-tab active" data-tab="overview">Overview</button>
+                <button class="detail-tab" data-tab="borrowing">Borrowing History</button>
+                <button class="detail-tab" data-tab="activity">Activity</button>
+            </div>
+
+            <!-- Tab Content -->
+            <div class="detail-content">
+                <!-- Overview Tab -->
+                <div class="detail-tab-pane active" id="tab-overview">
+                    <div class="detail-grid">
+                        <div class="detail-left">
+                            <div class="info-card">
+                                <h4>Personal Information</h4>
+                                <div class="info-row">
+                                    <span class="info-label">📧 Email:</span>
+                                    <span class="info-value" id="infoEmail">-</span>
+                                </div>
+                                <div class="info-row">
+                                    <span class="info-label">📅 Member Since:</span>
+                                    <span class="info-value" id="infoJoined">-</span>
+                                </div>
+                                <div class="info-row">
+                                    <span class="info-label">🕐 Last Active:</span>
+                                    <span class="info-value" id="infoLastActive">-</span>
+                                </div>
+                                <div class="info-row">
+                                    <span class="info-label">🆔 Member ID:</span>
+                                    <span class="info-value" id="infoMemberId">-</span>
+                                </div>
+                                <div class="info-row">
+                                    <span class="info-label">👤 Role:</span>
+                                    <span class="info-value" id="infoRole">-</span>
+                                </div>
+                            </div>
+
+                            <div class="info-card">
+                                <h4>Account Stats</h4>
+                                <div class="stats-summary">
+                                    <div class="stat-item">
+                                        <div class="stat-big" id="infoBorrowedCount">0</div>
+                                        <div class="stat-label">Total Borrowed</div>
+                                    </div>
+                                    <div class="stat-item">
+                                        <div class="stat-big" id="infoActiveBorrow">0</div>
+                                        <div class="stat-label">Currently Borrowed</div>
+                                    </div>
+                                    <div class="stat-item">
+                                        <div class="stat-big" id="infoReturnRate">0%</div>
+                                        <div class="stat-label">Return Rate</div>
+                                    </div>
+                                </div>
+                            </div>
+                        </div>
+
+                        <div class="detail-right">
+                            <div class="current-books-card">
+                                <h4>Currently Borrowed Books</h4>
+                                <div class="current-books-list" id="currentBooksList">
+                                    <p class="no-data">No active borrowings</p>
+                                </div>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+
+                <!-- Borrowing History Tab -->
+                <div class="detail-tab-pane" id="tab-borrowing">
+                    <table class="detail-history-table">
+                        <thead>
+                            <tr>
+                                <th>Book</th>
+                                <th>Borrowed</th>
+                                <th>Due Date</th>
+                                <th>Returned</th>
+                                <th>Status</th>
+                            </tr>
+                        </thead>
+                        <tbody id="borrowingHistoryBody">
+                            <!-- Populated by JavaScript -->
+                        </tbody>
+                    </table>
+                </div>
+
+                <!-- Activity Tab -->
+                <div class="detail-tab-pane" id="tab-activity">
+                    <div class="activity-timeline" id="activityTimeline">
+                        <!-- Populated by JavaScript -->
+                    </div>
+                </div>
+            </div>
+
+            <!-- Detail Footer -->
+            <div class="detail-footer">
+                <span id="memberSinceText">Member since May 14, 2025</span>
+                <div class="detail-buttons">
+                    <button class="btn btn-secondary" id="editMemberFromDetailBtn">✏️ Edit Member</button>
+                    <button class="btn btn-danger" id="deleteMemberFromDetailBtn">🗑️ Delete Member</button>
+                </div>
+            </div>
+        </div>
+    </div>
+
+    <!-- ADD MEMBER MODAL -->
+    <div class="modal-overlay" id="addMemberOverlay" style="display: none;">
+        <div class="modal-card">
+            <div class="modal-header">
+                <div class="modal-title-section">
+                    <div class="modal-icon-circle">👤</div>
+                    <h2>Add New Member</h2>
+                </div>
+                <button class="modal-close" id="closeAddMemberBtn">✕</button>
+            </div>
+
+            <form id="addMemberForm" class="member-form">
+                <div class="form-row">
+                    <div class="form-group">
+                        <label for="memberName">Full Name <span class="required">*</span></label>
+                        <input type="text" id="memberName" placeholder="Enter full name" required minlength="2">
+                        <div class="form-error"></div>
+                    </div>
+                    <div class="form-group">
+                        <label for="memberId">Member ID</label>
+                        <div class="id-input-wrapper">
+                            <input type="text" id="memberId" placeholder="#MBR-0000" readonly>
+                            <button type="button" class="regenerate-btn" id="regenerateIdBtn">🔄</button>
+                        </div>
+                    </div>
+                </div>
+
+                <div class="form-row">
+                    <div class="form-group">
+                        <label for="memberEmail">Email Address <span class="required">*</span></label>
+                        <input type="email" id="memberEmail" placeholder="member@email.com" required>
+                        <div class="form-error"></div>
+                    </div>
+                    <div class="form-group">
+                        <label for="memberPhone">Phone Number</label>
+                        <input type="tel" id="memberPhone" placeholder="+44 7000 000000">
+                    </div>
+                </div>
+
+                <div class="form-row">
+                    <div class="form-group">
+                        <label for="memberPassword">Password <span class="required">*</span></label>
+                        <div class="password-input-wrapper">
+                            <input type="password" id="memberPassword" placeholder="Min 6 characters" required minlength="6">
+                            <button type="button" class="toggle-password" id="togglePassword1">👁️</button>
+                        </div>
+                        <div class="strength-bar">
+                            <div class="strength-fill" id="strengthFill"></div>
+                        </div>
+                        <div class="strength-text" id="strengthText">Weak</div>
+                        <div class="form-error"></div>
+                    </div>
+                    <div class="form-group">
+                        <label for="confirmPassword">Confirm Password <span class="required">*</span></label>
+                        <div class="password-input-wrapper">
+                            <input type="password" id="confirmPassword" placeholder="Confirm password" required>
+                            <button type="button" class="toggle-password" id="togglePassword2">👁️</button>
+                        </div>
+                        <div class="form-error"></div>
+                    </div>
+                </div>
+
+                <div class="form-group full-width">
+                    <label>Role <span class="required">*</span></label>
+                    <div class="role-selector">
+                        <label class="role-option">
+                            <input type="radio" name="role" value="member" checked>
+                            <span class="role-pill">Member</span>
+                        </label>
+                        <label class="role-option">
+                            <input type="radio" name="role" value="admin">
+                            <span class="role-pill">Admin</span>
+                        </label>
+                    </div>
+                    <p class="role-warning" id="roleWarning" style="display: none;">⚠️ Admin has full access to the system</p>
+                </div>
+
+                <div class="form-group full-width">
+                    <label for="memberNotes">Notes / Remarks</label>
+                    <textarea id="memberNotes" placeholder="Any notes about this member..." maxlength="200" rows="3"></textarea>
+                    <div class="char-counter"><span id="memberNotesCount">0</span>/200</div>
+                </div>
+
+                <div class="form-group full-width">
+                    <label>Avatar Color</label>
+                    <div class="color-picker">
+                        <button type="button" class="color-swatch active" data-color="purple" style="background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);"></button>
+                        <button type="button" class="color-swatch" data-color="blue" style="background: linear-gradient(135deg, #4facfe 0%, #00f2fe 100%);"></button>
+                        <button type="button" class="color-swatch" data-color="green" style="background: linear-gradient(135deg, #43e97b 0%, #38f9d7 100%);"></button>
+                        <button type="button" class="color-swatch" data-color="orange" style="background: linear-gradient(135deg, #f7971e 0%, #ffd200 100%);"></button>
+                        <button type="button" class="color-swatch" data-color="pink" style="background: linear-gradient(135deg, #f5576c 0%, #f093fb 100%);"></button>
+                        <button type="button" class="color-swatch" data-color="teal" style="background: linear-gradient(135deg, #11998e 0%, #38ef7d 100%);"></button>
+                        <button type="button" class="color-swatch" data-color="indigo" style="background: linear-gradient(135deg, #5a67d8 0%, #6b46c1 100%);"></button>
+                        <button type="button" class="color-swatch" data-color="cyan" style="background: linear-gradient(135deg, #06b6d4 0%, #0891b2 100%);"></button>
+                    </div>
+                </div>
+
+                <div class="form-footer">
+                    <div class="required-note">* Required fields</div>
+                    <div class="form-buttons">
+                        <button type="button" class="btn btn-secondary" id="cancelAddMemberBtn">Cancel</button>
+                        <button type="submit" class="btn btn-primary" id="submitAddMemberBtn">Add Member</button>
+                    </div>
+                </div>
+            </form>
+        </div>
+    </div>
+
+    <!-- EDIT MEMBER MODAL -->
+    <div class="modal-overlay" id="editMemberOverlay" style="display: none;">
+        <div class="modal-card">
+            <div class="modal-header">
+                <div class="modal-title-section">
+                    <div class="modal-icon-circle">✏️</div>
+                    <h2>Edit Member</h2>
+                </div>
+                <button class="modal-close" id="closeEditMemberBtn">✕</button>
+            </div>
+
+            <form id="editMemberForm" class="member-form">
+                <div class="form-row">
+                    <div class="form-group">
+                        <label for="editMemberName">Full Name <span class="required">*</span></label>
+                        <input type="text" id="editMemberName" placeholder="Enter full name" required minlength="2">
+                        <div class="form-error"></div>
+                    </div>
+                    <div class="form-group">
+                        <label for="editMemberId">Member ID</label>
+                        <input type="text" id="editMemberId" placeholder="#MBR-0000" readonly>
+                    </div>
+                </div>
+
+                <div class="form-row">
+                    <div class="form-group">
+                        <label for="editMemberEmail">Email Address <span class="required">*</span></label>
+                        <input type="email" id="editMemberEmail" placeholder="member@email.com" required>
+                        <div class="form-error"></div>
+                    </div>
+                    <div class="form-group">
+                        <label for="editMemberPhone">Phone Number</label>
+                        <input type="tel" id="editMemberPhone" placeholder="+44 7000 000000">
+                    </div>
+                </div>
+
+                <div class="form-group full-width">
+                    <label>
+                        <input type="checkbox" id="changePasswordCheckbox">
+                        Change Password
+                    </label>
+                </div>
+
+                <div id="passwordChangeFields" style="display: none;">
+                    <div class="form-row">
+                        <div class="form-group">
+                            <label for="editPassword">New Password <span class="required">*</span></label>
+                            <div class="password-input-wrapper">
+                                <input type="password" id="editPassword" placeholder="Min 6 characters" minlength="6">
+                                <button type="button" class="toggle-password" id="toggleEditPassword1">👁️</button>
+                            </div>
+                            <div class="form-error"></div>
+                        </div>
+                        <div class="form-group">
+                            <label for="confirmEditPassword">Confirm Password <span class="required">*</span></label>
+                            <div class="password-input-wrapper">
+                                <input type="password" id="confirmEditPassword" placeholder="Confirm password">
+                                <button type="button" class="toggle-password" id="toggleEditPassword2">👁️</button>
+                            </div>
+                            <div class="form-error"></div>
+                        </div>
+                    </div>
+                </div>
+
+                <div class="form-group full-width">
+                    <label for="editMemberNotes">Notes / Remarks</label>
+                    <textarea id="editMemberNotes" placeholder="Any notes about this member..." maxlength="200" rows="3"></textarea>
+                    <div class="char-counter"><span id="editMemberNotesCount">0</span>/200</div>
+                </div>
+
+                <div class="form-footer">
+                    <div class="required-note">* Required fields</div>
+                    <div class="form-buttons">
+                        <button type="button" class="btn btn-secondary" id="cancelEditMemberBtn">Cancel</button>
+                        <button type="submit" class="btn btn-primary" id="submitEditMemberBtn">Save Changes</button>
+                    </div>
+                </div>
+            </form>
+        </div>
+    </div>
+
+    <!-- DELETE MEMBER MODAL -->
+    <div class="modal-overlay" id="deleteMemberOverlay" style="display: none;">
+        <div class="modal-card modal-small">
+            <div class="delete-modal-content">
+                <div class="delete-icon-circle">🗑️</div>
+                <h2>Delete Member?</h2>
+                <p class="delete-member-name" id="deleteMemberName">Member Name</p>
+                <p class="delete-member-email" id="deleteMemberEmail">email@example.com</p>
+                <p class="delete-warning">This will permanently delete this member and all their data.</p>
+                <div class="delete-active-warning" id="deleteActiveWarning" style="display: none;">
+                    ⚠️ This member has <span id="activeBorrowCount">X</span> active borrowing(s). All books must be returned first.
+                </div>
+                <div class="delete-buttons">
+                    <button type="button" class="btn btn-secondary" id="cancelDeleteMemberBtn">Cancel</button>
+                    <button type="button" class="btn btn-danger" id="confirmDeleteMemberBtn">Yes, Delete Member</button>
+                </div>
+            </div>
+        </div>
+    </div>
+
+    <!-- Toast Container -->
+    <div id="toastContainer" class="toast-container"></div>
+
+    <!-- JavaScript -->
+    <script src="manage-members.js" defer></script>
+</body>
+</html>

@@ -1,0 +1,369 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Admin Dashboard - City Library</title>
+    <link rel="stylesheet" href="shared.css">
+    <link rel="stylesheet" href="admin.css">
+</head>
+<body>
+    <!-- PAGE LOADER -->
+    <div class="page-loader" id="pageLoader">
+        <div class="loader-spinner"></div>
+    </div>
+
+    <!-- ACCESS DENIED OVERLAY (for non-admin users) -->
+    <div class="access-denied-overlay" id="accessDenied" style="display: none;">
+        <div class="access-denied-card">
+            <div class="denied-icon">🚫</div>
+            <h2>Access Denied</h2>
+            <p>This area is restricted to administrators only</p>
+            <a href="index.html" class="btn btn-primary">Go Back Home</a>
+        </div>
+    </div>
+
+    <!-- SIDEBAR -->
+    <aside class="sidebar" id="sidebar">
+        <!-- Logo -->
+        <div class="sidebar-logo">
+            <div class="book-stack-icon">
+                <span></span>
+                <span></span>
+                <span></span>
+            </div>
+            <span>City<strong>Library</strong></span>
+        </div>
+
+        <!-- User Profile -->
+        <div class="sidebar-user">
+            <div class="user-avatar" id="userAvatar">A</div>
+            <div class="user-info">
+                <div class="user-name" id="userName">Admin User</div>
+                <div class="user-badge">Administrator</div>
+            </div>
+        </div>
+
+        <!-- Main Menu -->
+        <nav class="sidebar-menu">
+            <div class="menu-section">
+                <div class="menu-label">MAIN MENU</div>
+                <ul>
+                    <li><a href="#dashboard" class="menu-item active" data-section="dashboard">
+                        <span class="menu-icon">📊</span>
+                        <span>Dashboard</span>
+                    </a></li>
+                    <li><a href="manage-books.html" class="menu-item">
+                        <span class="menu-icon">📚</span>
+                        <span>Manage Books</span>
+                    </a></li>
+                    <li><a href="manage-members.html" class="menu-item">
+                        <span class="menu-icon">👥</span>
+                        <span>Manage Members</span>
+                    </a></li>
+                    <li><a href="borrowings.html" class="menu-item" data-section="borrowings">
+                        <span class="menu-icon">📋</span>
+                        <span>Borrowings</span>
+                    </a></li>
+                    <li><a href="reports.html" class="menu-item" data-section="reports">
+                        <span class="menu-icon">📈</span>
+                        <span>Reports</span>
+                    </a></li>
+                    <li><a href="#settings" class="menu-item" data-section="settings">
+                        <span class="menu-icon">⚙️</span>
+                        <span>Settings</span>
+                    </a></li>
+                </ul>
+            </div>
+
+            <div class="menu-section">
+                <div class="menu-label">ACCOUNT</div>
+                <ul>
+                    <li><a href="index.html" class="menu-item">
+                        <span class="menu-icon">🏠</span>
+                        <span>View Site</span>
+                    </a></li>
+                    <li><a href="#logout" class="menu-item logout-btn" id="logoutBtn">
+                        <span class="menu-icon">🚪</span>
+                        <span>Logout</span>
+                    </a></li>
+                </ul>
+            </div>
+        </nav>
+
+        <!-- Version -->
+        <div class="sidebar-bottom">
+            <div class="version-text">City Library v1.0</div>
+        </div>
+
+        <!-- Mobile Close Button -->
+        <button class="sidebar-close" id="sidebarClose">×</button>
+    </aside>
+
+    <!-- MOBILE OVERLAY -->
+    <div class="sidebar-overlay" id="sidebarOverlay"></div>
+
+    <!-- MAIN CONTENT -->
+    <main class="main-content">
+        <!-- TOP BAR -->
+        <header class="top-bar">
+            <div class="top-bar-left">
+                <button class="hamburger" id="hamburger">
+                    <span></span>
+                    <span></span>
+                    <span></span>
+                </button>
+                <h1 class="page-title">Dashboard</h1>
+            </div>
+            <div class="top-bar-right">
+                <div class="search-box">
+                    <input type="search" placeholder="Search anything..." id="globalSearch">
+                    <span class="search-icon">🔍</span>
+                </div>
+                <div class="notification-bell">
+                    <button class="bell-icon" id="notificationBell">🔔
+                        <span class="notification-badge" id="notificationBadge">2</span>
+                    </button>
+                    <div class="notification-dropdown" id="notificationDropdown" style="display: none;">
+                        <div class="dropdown-header">Notifications</div>
+                        <div class="notification-list" id="notificationList">
+                            <div class="notification-item">
+                                <div class="notification-title">⚠️ Overdue Books</div>
+                                <div class="notification-text">2 books are overdue</div>
+                            </div>
+                            <div class="notification-item">
+                                <div class="notification-title">👤 New Members</div>
+                                <div class="notification-text">3 new members joined</div>
+                            </div>
+                        </div>
+                        <div class="dropdown-footer">
+                            <button class="btn btn-sm btn-secondary">Mark All as Read</button>
+                        </div>
+                    </div>
+                </div>
+                <div class="admin-menu">
+                    <button class="admin-avatar" id="adminAvatarBtn" title="Admin Menu">
+                        <span id="adminInitials">A</span>
+                    </button>
+                    <div class="admin-dropdown" id="adminDropdown" style="display: none;">
+                        <a href="#profile" class="dropdown-item">👤 Profile</a>
+                        <a href="#settings" class="dropdown-item">⚙️ Settings</a>
+                        <hr>
+                        <button class="dropdown-item logout-link" id="logoutDropdown">🚪 Logout</button>
+                    </div>
+                </div>
+            </div>
+        </header>
+
+        <!-- PAGE CONTENT -->
+        <div class="page-content">
+            <!-- WELCOME BANNER -->
+            <section class="welcome-banner">
+                <div class="banner-content">
+                    <h2 id="greeting">Good Morning, Admin! 👋</h2>
+                    <p id="bannerDate"></p>
+                    <p class="banner-subtext">Here's what's happening in your library today</p>
+                </div>
+                <div class="banner-illustration">
+                    <div class="banner-book-1"></div>
+                    <div class="banner-book-2"></div>
+                    <div class="banner-chart"></div>
+                </div>
+            </section>
+
+            <!-- STATS ROW -->
+            <section class="stats-row">
+                <div class="stat-card">
+                    <div class="stat-icon-circle primary">📚</div>
+                    <div class="stat-number" id="totalBooksCount">1,245</div>
+                    <div class="stat-label">Total Books</div>
+                    <div class="stat-change positive">+12 added this month</div>
+                </div>
+
+                <div class="stat-card">
+                    <div class="stat-icon-circle accent">👥</div>
+                    <div class="stat-number" id="totalMembersCount">342</div>
+                    <div class="stat-label">Total Members</div>
+                    <div class="stat-change positive">+8 new this month</div>
+                </div>
+
+                <div class="stat-card">
+                    <div class="stat-icon-circle warning">📖</div>
+                    <div class="stat-number" id="activeBorrowingsCount">87</div>
+                    <div class="stat-label">Active Borrowings</div>
+                    <div class="stat-change negative" id="overdueChange">3 overdue</div>
+                </div>
+
+                <div class="stat-card">
+                    <div class="stat-icon-circle success">✅</div>
+                    <div class="stat-number" id="returnedTodayCount">12</div>
+                    <div class="stat-label">Returned Today</div>
+                    <div class="stat-change grey" id="pendingChange">5 pending</div>
+                </div>
+            </section>
+
+            <!-- CHARTS ROW -->
+            <section class="charts-row">
+                <!-- BORROWING ACTIVITY CHART -->
+                <div class="card chart-card left-chart">
+                    <div class="card-header">
+                        <h3>Borrowing Activity</h3>
+                        <span class="badge badge-primary">Last 30 days</span>
+                    </div>
+                    <div class="bar-chart" id="borrowingChart">
+                        <div class="chart-bars" id="chartBars"></div>
+                        <div class="chart-labels" id="chartLabels"></div>
+                    </div>
+                </div>
+
+                <!-- BOOKS BY GENRE CHART -->
+                <div class="card chart-card right-chart">
+                    <div class="card-header">
+                        <h3>Books by Genre</h3>
+                    </div>
+                    <div class="donut-chart-wrapper">
+                        <div class="donut-chart" id="donutChart"></div>
+                        <div class="chart-legend" id="chartLegend"></div>
+                    </div>
+                </div>
+            </section>
+
+            <!-- TWO COLUMN ROW -->
+            <section class="two-column-row">
+                <!-- RECENT BORROWINGS TABLE -->
+                <div class="card table-card">
+                    <div class="card-header">
+                        <h3>Recent Borrowings</h3>
+                        <a href="#" class="view-all-link">View All →</a>
+                    </div>
+                    <div class="table-wrapper">
+                        <table class="data-table" id="borrowingsTable">
+                            <thead>
+                                <tr>
+                                    <th>Member</th>
+                                    <th>Book</th>
+                                    <th>Borrowed</th>
+                                    <th>Due Date</th>
+                                    <th>Status</th>
+                                    <th>Action</th>
+                                </tr>
+                            </thead>
+                            <tbody id="borrowingsTableBody"></tbody>
+                        </table>
+                    </div>
+                    <div class="table-pagination">
+                        <button class="btn btn-sm btn-secondary">← Prev</button>
+                        <span>Page <strong>1</strong> of <strong>5</strong></span>
+                        <button class="btn btn-sm btn-secondary">Next →</button>
+                    </div>
+                </div>
+
+                <!-- RIGHT COLUMN -->
+                <div class="right-column">
+                    <!-- TOP PERFORMING BOOKS -->
+                    <div class="card">
+                        <div class="card-header">
+                            <h3>Most Borrowed Books</h3>
+                        </div>
+                        <div class="top-books-list" id="topBooksList"></div>
+                    </div>
+
+                    <!-- QUICK ACTIONS -->
+                    <div class="card">
+                        <div class="card-header">
+                            <h3>Quick Actions</h3>
+                        </div>
+                        <div class="quick-actions-grid">
+                            <a href="manage-books.html" class="quick-action-btn">
+                                <div class="action-icon">➕</div>
+                                <span>Add New Book</span>
+                            </a>
+                            <a href="manage-members.html" class="quick-action-btn">
+                                <div class="action-icon">👤</div>
+                                <span>Add Member</span>
+                            </a>
+                            <button class="quick-action-btn" id="generateReportBtn">
+                                <div class="action-icon">📊</div>
+                                <span>Generate Report</span>
+                            </button>
+                            <button class="quick-action-btn" id="sendNoticeBtn">
+                                <div class="action-icon">📧</div>
+                                <span>Send Notice</span>
+                            </button>
+                        </div>
+                    </div>
+                </div>
+            </section>
+
+            <!-- ALERTS AND NOTIFICATIONS ROW -->
+            <section class="alerts-row">
+                <!-- OVERDUE ALERTS -->
+                <div class="card alerts-card">
+                    <div class="card-header">
+                        <h3>⚠️ Overdue Books</h3>
+                        <span class="badge badge-danger" id="overdueCount">2</span>
+                    </div>
+                    <div class="alerts-list" id="overdueList"></div>
+                </div>
+
+                <!-- RECENT MEMBERS -->
+                <div class="card members-card">
+                    <div class="card-header">
+                        <h3>New Members</h3>
+                        <span class="badge badge-primary">This Month</span>
+                    </div>
+                    <div class="members-list" id="membersList"></div>
+                    <div class="card-footer">
+                        <a href="manage-members.html" class="view-all-link">View All Members →</a>
+                    </div>
+                </div>
+            </section>
+
+            <!-- INVENTORY STATUS -->
+            <section class="inventory-section">
+                <div class="card">
+                    <div class="card-header">
+                        <h3>Library Inventory Status</h3>
+                    </div>
+                    <div class="inventory-table-wrapper">
+                        <table class="data-table" id="inventoryTable">
+                            <thead>
+                                <tr>
+                                    <th>Genre</th>
+                                    <th>Total Books</th>
+                                    <th>Available</th>
+                                    <th>Borrowed</th>
+                                    <th>Availability Rate</th>
+                                    <th>Status</th>
+                                </tr>
+                            </thead>
+                            <tbody id="inventoryTableBody"></tbody>
+                        </table>
+                    </div>
+                </div>
+            </section>
+        </div>
+    </main>
+
+    <!-- FOOTER -->
+    <footer class="footer">
+        <div class="footer-wrapper">
+            <div class="footer-bottom">
+                <div>© 2025 City Library Admin. All rights reserved.</div>
+                <div>Made with ❤️ for better library management</div>
+            </div>
+        </div>
+    </footer>
+
+    <!-- FIREBASE SDK -->
+    <script src="https://www.gstatic.com/firebasejs/10.7.1/firebase-app-compat.js"></script>
+    <script src="https://www.gstatic.com/firebasejs/10.7.1/firebase-auth-compat.js"></script>
+    <script src="https://www.gstatic.com/firebasejs/10.7.1/firebase-firestore-compat.js"></script>
+
+    <!-- SHARED CONFIG -->
+    <script src="firebase-config.js"></script>
+
+    <!-- ADMIN SCRIPT -->
+    <script src="admin.js" defer></script>
+</body>
+</html>

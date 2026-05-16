@@ -1,0 +1,192 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Reports - City Library</title>
+    <link rel="preconnect" href="https://fonts.googleapis.com">
+    <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+    <link href="https://fonts.googleapis.com/css2?family=Plus+Jakarta+Sans:wght@300;400;500;600;700;800&display=swap" rel="stylesheet">
+    <link rel="stylesheet" href="shared.css">
+    <link rel="stylesheet" href="manage-books.css">
+</head>
+<body>
+    <div class="sidebar" id="sidebar">
+        <a href="admin.html" class="sidebar-logo">
+            <div class="book-stack-icon">
+                <span></span>
+                <span></span>
+                <span></span>
+            </div>
+            <span>City<strong>Library</strong></span>
+        </a>
+
+        <div class="sidebar-user">
+            <div class="user-avatar" id="userAvatar">A</div>
+            <div class="user-info">
+                <div class="user-name" id="userName">Admin User</div>
+                <div class="user-badge">Administrator</div>
+            </div>
+        </div>
+
+        <nav class="sidebar-menu">
+            <div class="menu-section">
+                <div class="menu-label">Main</div>
+                <ul>
+                    <li><a href="admin.html" class="menu-item">📊 Dashboard</a></li>
+                    <li><a href="manage-books.html" class="menu-item">📚 Manage Books</a></li>
+                    <li><a href="manage-members.html" class="menu-item">👥 Manage Members</a></li>
+                </ul>
+            </div>
+            <div class="menu-section">
+                <div class="menu-label">Operations</div>
+                <ul>
+                    <li><a href="borrowings.html" class="menu-item">📋 Borrowings</a></li>
+                    <li><a href="reports.html" class="menu-item active">📈 Reports</a></li>
+                </ul>
+            </div>
+            <div class="menu-section">
+                <div class="menu-label">Account</div>
+                <ul>
+                    <li><a href="index.html" class="menu-item">🏠 View Site</a></li>
+                    <li><a href="#" class="menu-item" id="logoutBtn">🚪 Logout</a></li>
+                </ul>
+            </div>
+        </nav>
+
+        <button class="sidebar-close" id="sidebarClose">✕</button>
+        <div class="sidebar-bottom">
+            <div class="version-text">City Library v1.0</div>
+        </div>
+    </div>
+
+    <div class="sidebar-overlay" id="sidebarOverlay"></div>
+
+    <div class="top-bar">
+        <div class="top-bar-left">
+            <button class="hamburger" id="hamburger">
+                <span></span>
+                <span></span>
+                <span></span>
+            </button>
+            <div class="page-title">Reports</div>
+        </div>
+        <div class="top-bar-right">
+            <div class="search-box">
+                <span class="search-icon">🔍</span>
+                <input type="text" placeholder="Search reports...">
+            </div>
+            <div class="notification-bell">
+                <button class="bell-icon" id="notificationBell">🔔</button>
+                <span class="notification-badge" id="notificationBadge">3</span>
+                <div class="notification-dropdown" id="notificationDropdown" style="display: none;">
+                    <div class="dropdown-header">Notifications</div>
+                    <div class="notification-list">
+                        <div class="notification-item">
+                            <div class="notification-title">Monthly Summary</div>
+                            <div class="notification-text">Reports are ready to export.</div>
+                        </div>
+                    </div>
+                    <div class="dropdown-footer">
+                        <button class="dropdown-item">Mark all as read</button>
+                    </div>
+                </div>
+            </div>
+            <div class="admin-menu">
+                <button class="admin-avatar" id="adminAvatarBtn">A</button>
+                <div class="admin-dropdown" id="adminDropdown" style="display: none;">
+                    <a href="#" class="dropdown-item">👤 Profile</a>
+                    <a href="#" class="dropdown-item">⚙️ Settings</a>
+                    <hr>
+                    <button class="dropdown-item logout-link" id="logoutDropdown">🚪 Logout</button>
+                </div>
+            </div>
+        </div>
+    </div>
+
+    <div class="main-content">
+        <div class="page-content">
+            <div class="page-header-row">
+                <div class="header-left">
+                    <div class="breadcrumb">Dashboard → Reports</div>
+                    <h1>Reports</h1>
+                    <p class="header-subtext">Review library activity and export analytics.</p>
+                </div>
+                <div class="header-buttons">
+                    <button class="btn btn-secondary">📤 Export</button>
+                </div>
+            </div>
+
+            <div class="stats-cards-row">
+                <div class="stat-card">
+                    <div class="stat-icon-circle primary">📚</div>
+                    <div class="stat-info">
+                        <div class="stat-number" id="reportTotalBooksCount">0</div>
+                        <div class="stat-label">Total Books</div>
+                        <div class="stat-change positive">+12 this month</div>
+                    </div>
+                </div>
+                <div class="stat-card">
+                    <div class="stat-icon-circle accent">👥</div>
+                    <div class="stat-info">
+                        <div class="stat-number" id="reportTotalMembersCount">0</div>
+                        <div class="stat-label">Total Members</div>
+                        <div class="stat-change positive">+8 this month</div>
+                    </div>
+                </div>
+                <div class="stat-card">
+                    <div class="stat-icon-circle warning">📈</div>
+                    <div class="stat-info">
+                        <div class="stat-number" id="reportActiveBorrowingsCount">0</div>
+                        <div class="stat-label">Active Borrowings</div>
+                        <div class="stat-change negative" id="reportOverdueText">0 overdue</div>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </div>
+    <script src="https://www.gstatic.com/firebasejs/10.7.1/firebase-app-compat.js"></script>
+    <script src="https://www.gstatic.com/firebasejs/10.7.1/firebase-auth-compat.js"></script>
+    <script src="https://www.gstatic.com/firebasejs/10.7.1/firebase-firestore-compat.js"></script>
+    <script src="firebase-config.js"></script>
+    <script>
+        async function loadReportStats() {
+            if (!window.db) return;
+            try {
+                const [booksSnap, membersSnap, borrowingsSnap] = await Promise.all([
+                    db.collection('books').get(),
+                    db.collection('users').get(),
+                    db.collection('borrowings').get()
+                ]);
+                document.getElementById('reportTotalBooksCount').textContent = booksSnap.size;
+                document.getElementById('reportTotalMembersCount').textContent = membersSnap.size;
+                const activeBorrowings = borrowingsSnap.docs.filter(doc => {
+                    const data = doc.data();
+                    return data.status === 'borrowed' || data.status === 'active' || data.status === 'pending';
+                }).length;
+                const overdueCount = borrowingsSnap.docs.filter(doc => {
+                    const data = doc.data();
+                    if (!data.status) return false;
+                    if (data.status === 'overdue') return true;
+                    if (data.status === 'borrowed' && data.dueDate) {
+                        const dueDate = data.dueDate.toDate ? data.dueDate.toDate() : new Date(data.dueDate);
+                        return new Date() > dueDate;
+                    }
+                    return false;
+                }).length;
+                document.getElementById('reportActiveBorrowingsCount').textContent = activeBorrowings;
+                document.getElementById('reportOverdueText').textContent = `${overdueCount} overdue`;
+            } catch (error) {
+                console.error('Report stats load failed:', error);
+            }
+        }
+        firebase.auth().onAuthStateChanged((user) => {
+            if (!user) {
+                window.location.href = 'login.html';
+                return;
+            }
+            loadReportStats();
+        });
+    </script>
+</body>
+</html>

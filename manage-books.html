@@ -1,0 +1,566 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Manage Books - City Library</title>
+    <link rel="preconnect" href="https://fonts.googleapis.com">
+    <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+    <link href="https://fonts.googleapis.com/css2?family=Plus+Jakarta+Sans:wght@300;400;500;600;700;800&display=swap" rel="stylesheet">
+    <link rel="stylesheet" href="shared.css">
+    <link rel="stylesheet" href="manage-books.css">
+</head>
+<body>
+    <!-- Page Loader -->
+    <div id="pageLoader" class="page-loader">
+        <div class="spinner"></div>
+    </div>
+
+    <!-- Firebase CDN Scripts -->
+    <script src="https://www.gstatic.com/firebasejs/10.7.1/firebase-app-compat.js"></script>
+    <script src="https://www.gstatic.com/firebasejs/10.7.1/firebase-auth-compat.js"></script>
+    <script src="https://www.gstatic.com/firebasejs/10.7.1/firebase-firestore-compat.js"></script>
+    <script src="firebase-config.js"></script>
+
+    <!-- ==================== SIDEBAR ==================== -->
+    <div class="sidebar" id="sidebar">
+        <a href="admin.html" class="sidebar-logo">
+            <div class="book-stack-icon">
+                <span></span>
+                <span></span>
+                <span></span>
+            </div>
+            <span>City<strong>Library</strong></span>
+        </a>
+
+        <div class="sidebar-user">
+            <div class="user-avatar" id="userAvatar">A</div>
+            <div class="user-info">
+                <div class="user-name" id="userName">Admin User</div>
+                <div class="user-badge">Administrator</div>
+            </div>
+        </div>
+
+        <nav class="sidebar-menu">
+            <div class="menu-section">
+                <div class="menu-label">Main</div>
+                <ul>
+                    <li><a href="admin.html" class="menu-item">📊 Dashboard</a></li>
+                    <li><a href="manage-books.html" class="menu-item active">📚 Manage Books</a></li>
+                    <li><a href="manage-members.html" class="menu-item">👥 Manage Members</a></li>
+                </ul>
+            </div>
+            <div class="menu-section">
+                <div class="menu-label">Operations</div>
+                <ul>
+                    <li><a href="borrowings.html" class="menu-item">📋 Borrowings</a></li>
+                    <li><a href="reports.html" class="menu-item">📈 Reports</a></li>
+                </ul>
+            </div>
+            <div class="menu-section">
+                <div class="menu-label">Account</div>
+                <ul>
+                    <li><a href="index.html" class="menu-item">🏠 View Site</a></li>
+                    <li><a href="#" class="menu-item" id="logoutBtn">🚪 Logout</a></li>
+                </ul>
+            </div>
+        </nav>
+
+        <button class="sidebar-close" id="sidebarClose">✕</button>
+        <div class="sidebar-bottom">
+            <div class="version-text">City Library v1.0</div>
+        </div>
+    </div>
+
+    <div class="sidebar-overlay" id="sidebarOverlay"></div>
+
+    <!-- ==================== TOP BAR ==================== -->
+    <div class="top-bar">
+        <div class="top-bar-left">
+            <button class="hamburger" id="hamburger">
+                <span></span>
+                <span></span>
+                <span></span>
+            </button>
+            <div class="page-title">Manage Books</div>
+        </div>
+
+        <div class="top-bar-right">
+            <div class="search-box">
+                <span class="search-icon">🔍</span>
+                <input type="text" placeholder="Quick search...">
+            </div>
+
+            <div class="notification-bell">
+                <button class="bell-icon" id="notificationBell">🔔</button>
+                <span class="notification-badge" id="notificationBadge">2</span>
+                <div class="notification-dropdown" id="notificationDropdown" style="display: none;">
+                    <div class="dropdown-header">Notifications</div>
+                    <div class="notification-list">
+                        <div class="notification-item">
+                            <div class="notification-title">Book Added</div>
+                            <div class="notification-text">New book "The Great Gatsby" added to system</div>
+                        </div>
+                        <div class="notification-item">
+                            <div class="notification-title">Overdue Alert</div>
+                            <div class="notification-text">2 members have overdue books</div>
+                        </div>
+                    </div>
+                    <div class="dropdown-footer">
+                        <button class="dropdown-item">Mark all as read</button>
+                    </div>
+                </div>
+            </div>
+
+            <div class="admin-menu">
+                <button class="admin-avatar" id="adminAvatarBtn">A</button>
+                <span id="adminInitials" style="display:none"></span>
+                <div class="admin-dropdown" id="adminDropdown" style="display: none;">
+                    <a href="#" class="dropdown-item">👤 Profile</a>
+                    <a href="#" class="dropdown-item">⚙️ Settings</a>
+                    <hr>
+                    <button class="dropdown-item logout-link" id="logoutDropdown">🚪 Logout</button>
+                </div>
+            </div>
+        </div>
+    </div>
+
+    <!-- ==================== MAIN CONTENT ==================== -->
+    <div class="main-content">
+        <div class="page-content">
+            <!-- PAGE HEADER -->
+            <div class="page-header-row">
+                <div class="header-left">
+                    <div class="breadcrumb">Dashboard → Manage Books</div>
+                    <h1>Manage Books</h1>
+                    <p class="header-subtext">Add, edit and manage your library collection</p>
+                </div>
+                <div class="header-buttons">
+                    <button class="btn btn-secondary" id="importBooksBtn">📥 Import Books</button>
+                    <button class="btn btn-primary" id="addBookBtn">➕ Add New Book</button>
+                </div>
+            </div>
+
+            <!-- STATS MINI ROW -->
+            <div class="stats-mini-row">
+                <div class="stat-mini-card">
+                    <div class="stat-mini-number" id="totalBooksCount">24</div>
+                    <div class="stat-mini-label">Total Books</div>
+                </div>
+                <div class="stat-mini-divider"></div>
+                <div class="stat-mini-card">
+                    <div class="stat-mini-number green" id="availableBooksCount">18</div>
+                    <div class="stat-mini-label">Available</div>
+                </div>
+                <div class="stat-mini-divider"></div>
+                <div class="stat-mini-card">
+                    <div class="stat-mini-number orange" id="borrowedBooksCount">5</div>
+                    <div class="stat-mini-label">Borrowed</div>
+                </div>
+                <div class="stat-mini-divider"></div>
+                <div class="stat-mini-card">
+                    <div class="stat-mini-number purple" id="genresCount">8</div>
+                    <div class="stat-mini-label">Genres</div>
+                </div>
+            </div>
+
+            <!-- SEARCH FILTER TOOLBAR -->
+            <div class="filter-toolbar">
+                <div class="filter-row-1">
+                    <div class="search-input-wrapper">
+                        <span class="search-icon">🔍</span>
+                        <input type="text" id="searchInput" placeholder="Search by title, author, ISBN or genre..." class="search-input">
+                    </div>
+
+                    <select id="genreFilter" class="filter-select">
+                        <option value="">All Genres</option>
+                        <option value="Fiction">Fiction</option>
+                        <option value="Non-Fiction">Non-Fiction</option>
+                        <option value="Science">Science</option>
+                        <option value="History">History</option>
+                        <option value="Technology">Technology</option>
+                        <option value="Biography">Biography</option>
+                        <option value="Children">Children</option>
+                        <option value="Mystery">Mystery</option>
+                    </select>
+
+                    <select id="availabilityFilter" class="filter-select">
+                        <option value="">All Books</option>
+                        <option value="available">Available</option>
+                        <option value="unavailable">Unavailable</option>
+                        <option value="low">Low Stock</option>
+                    </select>
+
+                    <select id="sortSelect" class="filter-select">
+                        <option value="latest">Latest Added</option>
+                        <option value="titleAz">Title A-Z</option>
+                        <option value="titleZa">Title Z-A</option>
+                        <option value="mostAvailable">Most Available</option>
+                    </select>
+                </div>
+
+                <div class="filter-row-2">
+                    <div class="results-count">Showing <span id="resultsCount">12</span> of <span id="totalCount">12</span> books</div>
+                    <div class="view-toggle">
+                        <button class="view-btn active" id="tableViewBtn" data-view="table">📊 Table</button>
+                        <button class="view-btn" id="gridViewBtn" data-view="grid">📋 Grid</button>
+                    </div>
+                </div>
+            </div>
+
+            <!-- BOOKS TABLE VIEW -->
+            <div class="table-view-container" id="tableViewContainer">
+                <div class="table-card">
+                    <div class="table-wrapper">
+                        <table class="data-table">
+                            <thead>
+                                <tr>
+                                    <th style="width: 50px;">
+                                        <input type="checkbox" id="selectAllCheckbox" class="custom-checkbox">
+                                    </th>
+                                    <th style="width: 80px;">Cover</th>
+                                    <th>Book Info</th>
+                                    <th style="width: 120px;">Genre</th>
+                                    <th style="width: 100px;">Copies</th>
+                                    <th style="width: 100px;">Available</th>
+                                    <th style="width: 120px;">Status</th>
+                                    <th style="width: 140px;">Actions</th>
+                                </tr>
+                            </thead>
+                            <tbody id="booksTableBody">
+                                <!-- Populated by JavaScript -->
+                            </tbody>
+                        </table>
+                    </div>
+
+                    <!-- Bulk Actions Bar -->
+                    <div class="bulk-actions-bar" id="bulkActionsBar" style="display: none;">
+                        <div class="bulk-info">
+                            <span id="bulkCount">0</span> books selected
+                        </div>
+                        <div class="bulk-buttons">
+                            <button class="btn btn-secondary" id="clearSelectBtn">Clear</button>
+                            <button class="btn btn-danger" id="bulkDeleteBtn">🗑️ Delete Selected</button>
+                        </div>
+                    </div>
+
+                    <!-- Pagination -->
+                    <div class="table-pagination">
+                        <div class="pagination-info">Showing <span id="paginationStart">1</span>-<span id="paginationEnd">10</span> of <span id="paginationTotal">24</span> books</div>
+                        <div class="pagination-numbers" id="paginationNumbers">
+                            <!-- Generated by JavaScript -->
+                        </div>
+                        <div class="pagination-select">
+                            <select id="perPageSelect">
+                                <option value="10">10 per page</option>
+                                <option value="25">25 per page</option>
+                                <option value="50">50 per page</option>
+                            </select>
+                        </div>
+                    </div>
+                </div>
+            </div>
+
+            <!-- BOOKS GRID VIEW -->
+            <div class="grid-view-container" id="gridViewContainer" style="display: none;">
+                <div class="books-grid" id="booksGrid">
+                    <!-- Populated by JavaScript -->
+                </div>
+            </div>
+        </div>
+    </div>
+
+    <!-- ==================== MODALS ==================== -->
+
+    <!-- ADD NEW BOOK MODAL -->
+    <div class="modal-overlay" id="addBookOverlay" style="display: none;">
+        <div class="modal-card">
+            <div class="modal-header">
+                <div class="modal-title-section">
+                    <div class="modal-icon-circle">📚</div>
+                    <h2>Add New Book</h2>
+                </div>
+                <button class="modal-close" id="closeAddBookBtn">✕</button>
+            </div>
+
+            <form id="addBookForm" class="book-form">
+                <!-- Row 1: Title -->
+                <div class="form-group full-width">
+                    <label for="bookTitle">Book Title <span class="required">*</span></label>
+                    <input type="text" id="bookTitle" placeholder="Enter book title" required minlength="2">
+                    <div class="form-error"></div>
+                </div>
+
+                <!-- Row 2: Author & ISBN -->
+                <div class="form-row">
+                    <div class="form-group">
+                        <label for="bookAuthor">Author <span class="required">*</span></label>
+                        <input type="text" id="bookAuthor" placeholder="Enter author name" required>
+                        <div class="form-error"></div>
+                    </div>
+                    <div class="form-group">
+                        <label for="bookISBN">ISBN</label>
+                        <input type="text" id="bookISBN" placeholder="978-0-00-000000-0">
+                        <div class="form-error"></div>
+                    </div>
+                </div>
+
+                <!-- Row 3: Genre & Year -->
+                <div class="form-row">
+                    <div class="form-group">
+                        <label for="bookGenre">Genre <span class="required">*</span></label>
+                        <select id="bookGenre" required>
+                            <option value="">Select a genre</option>
+                            <option value="Fiction">Fiction</option>
+                            <option value="Non-Fiction">Non-Fiction</option>
+                            <option value="Science">Science</option>
+                            <option value="History">History</option>
+                            <option value="Technology">Technology</option>
+                            <option value="Biography">Biography</option>
+                            <option value="Children">Children</option>
+                            <option value="Mystery">Mystery</option>
+                        </select>
+                        <div class="form-error"></div>
+                    </div>
+                    <div class="form-group">
+                        <label for="bookYear">Year Published</label>
+                        <input type="number" id="bookYear" placeholder="2023" min="1800" max="2999">
+                        <div class="form-error"></div>
+                    </div>
+                </div>
+
+                <!-- Row 4: Copies -->
+                <div class="form-row">
+                    <div class="form-group">
+                        <label for="totalCopies">Total Copies <span class="required">*</span></label>
+                        <input type="number" id="totalCopies" placeholder="1" min="1" max="999" value="1" required>
+                        <div class="form-error"></div>
+                    </div>
+                    <div class="form-group">
+                        <label for="availableCopies">Available Copies <span class="required">*</span></label>
+                        <input type="number" id="availableCopies" placeholder="1" min="0" max="999" required>
+                        <div class="form-error"></div>
+                    </div>
+                </div>
+
+                <!-- Row 5: Description -->
+                <div class="form-group full-width">
+                    <label for="bookDescription">Book Description</label>
+                    <textarea id="bookDescription" rows="4" placeholder="Enter a brief description of the book" maxlength="500"></textarea>
+                    <div class="char-counter"><span id="charCount">0</span>/500 characters</div>
+                </div>
+
+                <!-- Row 6: Language & Edition -->
+                <div class="form-row">
+                    <div class="form-group">
+                        <label for="bookLanguage">Language</label>
+                        <select id="bookLanguage">
+                            <option value="English">English</option>
+                            <option value="Urdu">Urdu</option>
+                            <option value="Arabic">Arabic</option>
+                            <option value="French">French</option>
+                            <option value="Spanish">Spanish</option>
+                            <option value="Other">Other</option>
+                        </select>
+                    </div>
+                    <div class="form-group">
+                        <label for="bookEdition">Edition</label>
+                        <input type="text" id="bookEdition" placeholder="e.g. 1st Edition">
+                    </div>
+                </div>
+
+                <!-- Cover Color Picker -->
+                <div class="form-group full-width">
+                    <label>Cover Color Theme</label>
+                    <div class="color-picker">
+                        <button type="button" class="color-swatch active" data-color="purple" style="background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);"></button>
+                        <button type="button" class="color-swatch" data-color="blue" style="background: linear-gradient(135deg, #4facfe 0%, #00f2fe 100%);"></button>
+                        <button type="button" class="color-swatch" data-color="green" style="background: linear-gradient(135deg, #43e97b 0%, #38f9d7 100%);"></button>
+                        <button type="button" class="color-swatch" data-color="orange" style="background: linear-gradient(135deg, #f7971e 0%, #ffd200 100%);"></button>
+                        <button type="button" class="color-swatch" data-color="pink" style="background: linear-gradient(135deg, #f5576c 0%, #f093fb 100%);"></button>
+                        <button type="button" class="color-swatch" data-color="teal" style="background: linear-gradient(135deg, #11998e 0%, #38ef7d 100%);"></button>
+                    </div>
+                    <div class="cover-preview" id="coverPreview">
+                        <div class="preview-book" style="background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);"></div>
+                    </div>
+                </div>
+
+                <!-- Footer -->
+                <div class="form-footer">
+                    <div class="required-note">* Required fields</div>
+                    <div class="form-buttons">
+                        <button type="button" class="btn btn-secondary" id="cancelAddBookBtn">Cancel</button>
+                        <button type="submit" class="btn btn-primary" id="submitAddBookBtn">Add Book</button>
+                    </div>
+                </div>
+            </form>
+        </div>
+    </div>
+
+    <!-- EDIT BOOK MODAL -->
+    <div class="modal-overlay" id="editBookOverlay" style="display: none;">
+        <div class="modal-card">
+            <div class="modal-header">
+                <div class="modal-title-section">
+                    <div class="modal-icon-circle">✏️</div>
+                    <h2>Edit Book</h2>
+                </div>
+                <button class="modal-close" id="closeEditBookBtn">✕</button>
+            </div>
+
+            <form id="editBookForm" class="book-form">
+                <!-- Same form as add book -->
+                <div class="form-group full-width">
+                    <label for="editBookTitle">Book Title <span class="required">*</span></label>
+                    <input type="text" id="editBookTitle" placeholder="Enter book title" required minlength="2">
+                    <div class="form-error"></div>
+                </div>
+
+                <div class="form-row">
+                    <div class="form-group">
+                        <label for="editBookAuthor">Author <span class="required">*</span></label>
+                        <input type="text" id="editBookAuthor" placeholder="Enter author name" required>
+                        <div class="form-error"></div>
+                    </div>
+                    <div class="form-group">
+                        <label for="editBookISBN">ISBN</label>
+                        <input type="text" id="editBookISBN" placeholder="978-0-00-000000-0">
+                        <div class="form-error"></div>
+                    </div>
+                </div>
+
+                <div class="form-row">
+                    <div class="form-group">
+                        <label for="editBookGenre">Genre <span class="required">*</span></label>
+                        <select id="editBookGenre" required>
+                            <option value="">Select a genre</option>
+                            <option value="Fiction">Fiction</option>
+                            <option value="Non-Fiction">Non-Fiction</option>
+                            <option value="Science">Science</option>
+                            <option value="History">History</option>
+                            <option value="Technology">Technology</option>
+                            <option value="Biography">Biography</option>
+                            <option value="Children">Children</option>
+                            <option value="Mystery">Mystery</option>
+                        </select>
+                        <div class="form-error"></div>
+                    </div>
+                    <div class="form-group">
+                        <label for="editBookYear">Year Published</label>
+                        <input type="number" id="editBookYear" placeholder="2023" min="1800" max="2999">
+                        <div class="form-error"></div>
+                    </div>
+                </div>
+
+                <div class="form-row">
+                    <div class="form-group">
+                        <label for="editTotalCopies">Total Copies <span class="required">*</span></label>
+                        <input type="number" id="editTotalCopies" min="1" max="999" required>
+                        <div class="form-error"></div>
+                    </div>
+                    <div class="form-group">
+                        <label for="editAvailableCopies">Available Copies <span class="required">*</span></label>
+                        <input type="number" id="editAvailableCopies" min="0" max="999" required>
+                        <div class="form-error"></div>
+                    </div>
+                </div>
+
+                <div class="form-group full-width">
+                    <label for="editBookDescription">Book Description</label>
+                    <textarea id="editBookDescription" rows="4" maxlength="500"></textarea>
+                    <div class="char-counter"><span id="editCharCount">0</span>/500 characters</div>
+                </div>
+
+                <div class="form-row">
+                    <div class="form-group">
+                        <label for="editBookLanguage">Language</label>
+                        <select id="editBookLanguage">
+                            <option value="English">English</option>
+                            <option value="Urdu">Urdu</option>
+                            <option value="Arabic">Arabic</option>
+                            <option value="French">French</option>
+                            <option value="Spanish">Spanish</option>
+                            <option value="Other">Other</option>
+                        </select>
+                    </div>
+                    <div class="form-group">
+                        <label for="editBookEdition">Edition</label>
+                        <input type="text" id="editBookEdition">
+                    </div>
+                </div>
+
+                <div class="form-footer">
+                    <div class="required-note">* Required fields</div>
+                    <div class="form-buttons">
+                        <button type="button" class="btn btn-secondary" id="cancelEditBookBtn">Cancel</button>
+                        <button type="submit" class="btn btn-primary" id="submitEditBookBtn">Save Changes</button>
+                    </div>
+                </div>
+            </form>
+        </div>
+    </div>
+
+    <!-- DELETE CONFIRMATION MODAL -->
+    <div class="modal-overlay" id="deleteBookOverlay" style="display: none;">
+        <div class="modal-card modal-small">
+            <div class="delete-modal-content">
+                <div class="delete-icon-circle">🗑️</div>
+                <h2>Delete Book?</h2>
+                <p class="delete-book-title" id="deleteBookTitle">The Great Gatsby</p>
+                <p class="delete-warning">This action cannot be undone. All borrowing records for this book will be affected.</p>
+                <div class="delete-active-warning" id="deleteActiveWarning" style="display: none;">
+                    ⚠️ This book has <span id="activeBorrowCount">2</span> active borrowing(s). Please ensure all copies are returned first.
+                </div>
+                <div class="delete-buttons">
+                    <button type="button" class="btn btn-secondary" id="cancelDeleteBtn">Cancel</button>
+                    <button type="button" class="btn btn-danger" id="confirmDeleteBtn">Yes, Delete</button>
+                </div>
+            </div>
+        </div>
+    </div>
+
+    <!-- IMPORT BOOKS MODAL -->
+    <div class="modal-overlay" id="importBooksOverlay" style="display: none;">
+        <div class="modal-card">
+            <div class="modal-header">
+                <div class="modal-title-section">
+                    <div class="modal-icon-circle">📁</div>
+                    <h2>Import Books</h2>
+                </div>
+                <button class="modal-close" id="closeImportBtn">✕</button>
+            </div>
+
+            <div class="import-content">
+                <div class="drag-drop-zone" id="dragDropZone">
+                    <div class="drag-drop-icon">📁</div>
+                    <div class="drag-drop-text">Drag & drop CSV file here</div>
+                    <div class="drag-drop-or">or</div>
+                    <button type="button" class="btn btn-secondary" id="browseFileBtn">Browse File</button>
+                    <input type="file" id="fileInput" accept=".csv" style="display: none;">
+                </div>
+
+                <div class="import-format">
+                    <h4>Sample CSV Format:</h4>
+                    <div class="sample-csv">
+                        title,author,genre,totalCopies,isbn,year<br>
+                        "The Great Gatsby","F. Scott Fitzgerald","Fiction",5,"978-0-7432-7356-5",1925<br>
+                        "Sapiens","Yuval Noah Harari","History",3,"978-0-06-231609-7",2011
+                    </div>
+                    <a href="#" class="download-sample">📥 Download Sample CSV</a>
+                </div>
+
+                <div class="import-buttons">
+                    <button type="button" class="btn btn-secondary" id="cancelImportBtn">Cancel</button>
+                    <button type="button" class="btn btn-primary" id="importBtn" disabled>Import Books</button>
+                </div>
+            </div>
+        </div>
+    </div>
+
+    <!-- Toast Container -->
+    <div id="toastContainer" class="toast-container"></div>
+
+    <!-- JavaScript -->
+    <script src="manage-books.js" defer></script>
+</body>
+</html>

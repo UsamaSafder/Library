@@ -1,0 +1,758 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Register - City Library</title>
+    <link href="https://fonts.googleapis.com/css2?family=Plus+Jakarta+Sans:wght@300;400;500;600;700;800&display=swap" rel="stylesheet">
+    <style>
+        * {
+            margin: 0;
+            padding: 0;
+            box-sizing: border-box;
+        }
+
+        body {
+            font-family: 'Plus Jakarta Sans', sans-serif;
+            background-color: #ffffff;
+            color: #2d3748;
+            line-height: 1.6;
+            min-height: 100vh;
+            display: flex;
+            flex-direction: column;
+        }
+
+        /* ==================== NAVBAR ==================== */
+        .navbar {
+            position: sticky;
+            top: 0;
+            z-index: 1000;
+            background: rgba(255, 255, 255, 0.95);
+            backdrop-filter: blur(20px);
+            border-bottom: 1px solid rgba(102, 126, 234, 0.1);
+            box-shadow: 0 4px 30px rgba(102, 126, 234, 0.08);
+            height: 75px;
+            padding: 0 5%;
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+        }
+
+        .navbar-left {
+            display: flex;
+            align-items: center;
+            gap: 12px;
+        }
+
+        .book-stack-icon {
+            width: 24px;
+            height: 24px;
+            position: relative;
+        }
+
+        .book-stack-icon span {
+            position: absolute;
+            height: 5px;
+            background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
+            transform-origin: center;
+        }
+
+        .book-stack-icon span:nth-child(1) {
+            width: 16px;
+            top: 0;
+            left: 4px;
+            transform: rotate(-15deg);
+        }
+
+        .book-stack-icon span:nth-child(2) {
+            width: 16px;
+            top: 8px;
+            left: 0;
+            transform: rotate(5deg);
+            background: linear-gradient(135deg, #f093fb 0%, #f5576c 100%);
+        }
+
+        .book-stack-icon span:nth-child(3) {
+            width: 16px;
+            top: 16px;
+            left: 4px;
+            transform: rotate(-10deg);
+            background: linear-gradient(135deg, #4facfe 0%, #00f2fe 100%);
+        }
+
+        .navbar-logo {
+            font-size: 24px;
+            font-weight: 800;
+            letter-spacing: -0.5px;
+        }
+
+        .navbar-logo .gradient-text {
+            background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
+            -webkit-background-clip: text;
+            -webkit-text-fill-color: transparent;
+            background-clip: text;
+        }
+
+        .navbar-logo .dark-text {
+            color: #2d3748;
+        }
+
+        .navbar-links {
+            display: flex;
+            list-style: none;
+            gap: 35px;
+            align-items: center;
+        }
+
+        .navbar-links a {
+            text-decoration: none;
+            color: #718096;
+            font-weight: 500;
+            font-size: 15px;
+            position: relative;
+            transition: color 0.3s ease;
+        }
+
+        .navbar-links a:hover {
+            color: #667eea;
+        }
+
+        .navbar-links a.active {
+            color: #667eea;
+        }
+
+        .navbar-links a.active::after {
+            content: '';
+            position: absolute;
+            bottom: -8px;
+            left: 50%;
+            transform: translateX(-50%);
+            width: 6px;
+            height: 6px;
+            background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
+            border-radius: 50%;
+        }
+
+        .navbar-register-btn {
+            background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
+            color: white;
+            padding: 10px 24px;
+            border: none;
+            border-radius: 50px;
+            cursor: pointer;
+            font-weight: 600;
+            font-size: 15px;
+            box-shadow: 0 4px 15px rgba(102, 126, 234, 0.4);
+            transition: all 0.3s ease;
+        }
+
+        .navbar-register-btn:hover {
+            transform: translateY(-2px);
+            box-shadow: 0 8px 30px rgba(102, 126, 234, 0.5);
+        }
+
+        .hamburger {
+            display: none;
+            flex-direction: column;
+            cursor: pointer;
+            gap: 6px;
+        }
+
+        .hamburger span {
+            width: 25px;
+            height: 3px;
+            background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
+            border-radius: 2px;
+            transition: all 0.3s ease;
+        }
+
+        .hamburger.active span:nth-child(1) {
+            transform: rotate(45deg) translate(10px, 10px);
+        }
+
+        .hamburger.active span:nth-child(2) {
+            opacity: 0;
+        }
+
+        .hamburger.active span:nth-child(3) {
+            transform: rotate(-45deg) translate(7px, -7px);
+        }
+
+        @media (max-width: 768px) {
+            .hamburger {
+                display: flex;
+            }
+
+            .navbar-links {
+                display: none;
+                position: absolute;
+                top: 75px;
+                left: 0;
+                right: 0;
+                flex-direction: column;
+                background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
+                padding: 20px;
+                gap: 15px;
+                z-index: 999;
+            }
+
+            .navbar-links.active {
+                display: flex;
+            }
+
+            .navbar-links a {
+                color: white;
+            }
+
+            .navbar-links a.active::after {
+                background: white;
+            }
+        }
+
+        /* ==================== MAIN CONTENT ==================== */
+        main {
+            flex: 1;
+            display: grid;
+            grid-template-columns: 1fr 1fr;
+            min-height: calc(100vh - 75px);
+        }
+
+        /* ==================== LEFT PANEL ==================== */
+        .register-left {
+            background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
+            display: flex;
+            flex-direction: column;
+            justify-content: center;
+            align-items: center;
+            padding: 60px 40px;
+            color: white;
+            position: relative;
+            overflow: hidden;
+        }
+
+        .decorative-circles {
+            position: absolute;
+            width: 100%;
+            height: 100%;
+            top: 0;
+            left: 0;
+            pointer-events: none;
+        }
+
+        .circle {
+            position: absolute;
+            border-radius: 50%;
+            background-color: rgba(255, 255, 255, 0.1);
+            animation: float 20s ease-in-out infinite;
+        }
+
+        .circle-1 {
+            width: 300px;
+            height: 300px;
+            top: -100px;
+            right: -100px;
+        }
+
+        .circle-2 {
+            width: 200px;
+            height: 200px;
+            bottom: -50px;
+            left: -50px;
+            animation-delay: 5s;
+        }
+
+        @keyframes float {
+            0%, 100% {
+                transform: translateY(0px);
+            }
+            50% {
+                transform: translateY(-30px);
+            }
+        }
+
+        .left-content {
+            position: relative;
+            z-index: 2;
+            text-align: center;
+        }
+
+        .left-icon {
+            font-size: 80px;
+            margin-bottom: 30px;
+            display: inline-block;
+        }
+
+        .left-heading {
+            font-size: 32px;
+            font-weight: 800;
+            margin-bottom: 12px;
+            letter-spacing: -0.5px;
+        }
+
+        .left-subtext {
+            font-size: 16px;
+            opacity: 0.9;
+            margin-bottom: 50px;
+        }
+
+        .features-list {
+            display: flex;
+            flex-direction: column;
+            gap: 20px;
+            text-align: left;
+            align-items: flex-start;
+            width: 100%;
+            max-width: 300px;
+        }
+
+        .feature-item {
+            display: flex;
+            gap: 15px;
+            align-items: center;
+            font-size: 15px;
+            opacity: 0.9;
+        }
+
+        .feature-icon {
+            font-size: 20px;
+            flex-shrink: 0;
+        }
+
+        /* ==================== RIGHT PANEL (FORM) ==================== */
+        .register-right {
+            background-color: #ffffff;
+            display: flex;
+            flex-direction: column;
+            justify-content: center;
+            padding: 60px 50px;
+        }
+
+        .form-wrapper {
+            max-width: 100%;
+        }
+
+        .form-header {
+            margin-bottom: 40px;
+        }
+
+        .form-title {
+            font-size: 28px;
+            font-weight: 800;
+            color: #2d3748;
+            margin-bottom: 8px;
+            letter-spacing: -0.5px;
+        }
+
+        .form-subtitle {
+            color: #718096;
+            font-size: 14px;
+        }
+
+        .form-group {
+            margin-bottom: 24px;
+        }
+
+        .form-label {
+            display: block;
+            font-size: 13px;
+            font-weight: 600;
+            color: #4a5568;
+            margin-bottom: 8px;
+            text-transform: uppercase;
+            letter-spacing: 0.5px;
+        }
+
+        .form-input {
+            width: 100%;
+            padding: 14px 18px;
+            background: #f7f8ff;
+            border: 2px solid #e8eaf6;
+            border-radius: 14px;
+            font-family: 'Plus Jakarta Sans', sans-serif;
+            font-size: 15px;
+            color: #2d3748;
+            transition: all 0.3s ease;
+        }
+
+        .form-input:focus {
+            outline: none;
+            border-color: #667eea;
+            background: white;
+            box-shadow: 0 0 0 4px rgba(102, 126, 234, 0.12);
+        }
+
+        .form-input::placeholder {
+            color: #a0aec0;
+        }
+
+        .form-input.error {
+            border-color: #ef4444;
+        }
+
+        .form-input.error:focus {
+            box-shadow: 0 0 0 4px rgba(239, 68, 68, 0.12);
+        }
+
+        .error-message {
+            color: #ef4444;
+            font-size: 12px;
+            margin-top: 6px;
+            display: none;
+        }
+
+        .error-message.show {
+            display: block;
+        }
+
+        .submit-btn {
+            width: 100%;
+            background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
+            color: white;
+            padding: 14px 32px;
+            border: none;
+            border-radius: 50px;
+            cursor: pointer;
+            font-weight: 600;
+            font-size: 15px;
+            box-shadow: 0 4px 20px rgba(102, 126, 234, 0.4);
+            transition: all 0.3s ease;
+            margin-top: 20px;
+            margin-bottom: 16px;
+            font-family: 'Plus Jakarta Sans', sans-serif;
+        }
+
+        .submit-btn:hover {
+            transform: translateY(-3px);
+            box-shadow: 0 8px 30px rgba(102, 126, 234, 0.5);
+        }
+
+        .form-footer {
+            text-align: center;
+            color: #718096;
+            font-size: 14px;
+        }
+
+        .form-footer a {
+            color: #667eea;
+            text-decoration: none;
+            font-weight: 600;
+            transition: color 0.3s ease;
+        }
+
+        .form-footer a:hover {
+            color: #764ba2;
+        }
+
+        /* ==================== FOOTER ==================== */
+        .footer {
+            background-color: #2d3748;
+            color: white;
+            padding: 30px 5%;
+            text-align: center;
+            font-size: 14px;
+            color: #a0aec0;
+        }
+
+        @media (max-width: 1024px) {
+            main {
+                grid-template-columns: 1fr;
+                min-height: auto;
+            }
+
+            .register-left {
+                display: none;
+            }
+
+            .register-right {
+                padding: 40px 30px;
+            }
+        }
+
+        @media (max-width: 768px) {
+            .navbar {
+                padding: 0 20px;
+            }
+
+            .register-right {
+                padding: 30px 20px;
+            }
+
+            .form-title {
+                font-size: 24px;
+            }
+        }
+    </style>
+</head>
+<body>
+    <!-- NAVBAR -->
+    <nav class="navbar">
+        <div class="navbar-left">
+            <div class="book-stack-icon">
+                <span></span>
+                <span></span>
+                <span></span>
+            </div>
+            <div class="navbar-logo">
+                <span class="gradient-text">City</span>
+                <span class="dark-text">Library</span>
+            </div>
+        </div>
+        <div class="hamburger" id="hamburger">
+            <span></span>
+            <span></span>
+            <span></span>
+        </div>
+        <ul class="navbar-links" id="navbarLinks">
+            <li><a href="index.html">Home</a></li>
+            <li><a href="catalogue.html">Books</a></li>
+            <li><a href="login.html">Login</a></li>
+            <li><a href="register.html" class="navbar-register-btn active">Register</a></li>
+        </ul>
+    </nav>
+
+    <main>
+        <!-- LEFT PANEL -->
+        <div class="register-left">
+            <div class="decorative-circles">
+                <div class="circle circle-1"></div>
+                <div class="circle circle-2"></div>
+            </div>
+            <div class="left-content">
+                <div class="left-icon">📚</div>
+                <h2 class="left-heading">Join Our Community</h2>
+                <p class="left-subtext">Start your reading journey today</p>
+                <div class="features-list">
+                    <div class="feature-item">
+                        <span class="feature-icon">✓</span>
+                        <span>Access 10,000+ books</span>
+                    </div>
+                    <div class="feature-item">
+                        <span class="feature-icon">✓</span>
+                        <span>Free borrowing membership</span>
+                    </div>
+                    <div class="feature-item">
+                        <span class="feature-icon">✓</span>
+                        <span>14-day borrow period</span>
+                    </div>
+                    <div class="feature-item">
+                        <span class="feature-icon">✓</span>
+                        <span>Personalized recommendations</span>
+                    </div>
+                </div>
+            </div>
+        </div>
+
+        <!-- RIGHT PANEL -->
+        <div class="register-right">
+            <div class="form-wrapper">
+                <div class="form-header">
+                    <h1 class="form-title">Create Account</h1>
+                    <p class="form-subtitle">Join City Library - it's free and takes just a minute!</p>
+                </div>
+
+                <form id="registerForm">
+                    <div class="form-group">
+                        <label class="form-label">Full Name</label>
+                        <input 
+                            type="text" 
+                            id="fullName" 
+                            class="form-input" 
+                            placeholder="Enter your full name"
+                            required
+                        >
+                        <div class="error-message" id="fullNameError"></div>
+                    </div>
+
+                    <div class="form-group">
+                        <label class="form-label">Email Address</label>
+                        <input 
+                            type="email" 
+                            id="email" 
+                            class="form-input" 
+                            placeholder="Enter your email"
+                            required
+                        >
+                        <div class="error-message" id="emailError"></div>
+                    </div>
+
+                    <div class="form-group">
+                        <label class="form-label">Password</label>
+                        <input 
+                            type="password" 
+                            id="password" 
+                            class="form-input" 
+                            placeholder="At least 6 characters"
+                            required
+                        >
+                        <div class="error-message" id="passwordError"></div>
+                    </div>
+
+                    <div class="form-group">
+                        <label class="form-label">Confirm Password</label>
+                        <input 
+                            type="password" 
+                            id="confirmPassword" 
+                            class="form-input" 
+                            placeholder="Confirm your password"
+                            required
+                        >
+                        <div class="error-message" id="confirmPasswordError"></div>
+                    </div>
+
+                    <button type="submit" class="submit-btn">Create Account</button>
+
+                    <div class="form-footer">
+                        Already have an account? <a href="login.html">Sign in here</a>
+                    </div>
+                </form>
+            </div>
+        </div>
+    </main>
+
+    <!-- FOOTER -->
+    <footer class="footer">
+        © 2025 City Library. All rights reserved.
+    </footer>
+
+    <script src="https://www.gstatic.com/firebasejs/10.7.1/firebase-app-compat.js"></script>
+    <script src="https://www.gstatic.com/firebasejs/10.7.1/firebase-auth-compat.js"></script>
+    <script src="https://www.gstatic.com/firebasejs/10.7.1/firebase-firestore-compat.js"></script>
+    <script src="firebase-config.js"></script>
+
+    <script>
+
+        // Hamburger Menu
+        const hamburger = document.getElementById('hamburger');
+        const navbarLinks = document.getElementById('navbarLinks');
+
+        hamburger.addEventListener('click', () => {
+            hamburger.classList.toggle('active');
+            navbarLinks.classList.toggle('active');
+        });
+
+        document.querySelectorAll('.navbar-links a').forEach(link => {
+            link.addEventListener('click', () => {
+                hamburger.classList.remove('active');
+                navbarLinks.classList.remove('active');
+            });
+        });
+
+        // Form Validation
+        const registerForm = document.getElementById('registerForm');
+        const fullNameInput = document.getElementById('fullName');
+        const emailInput = document.getElementById('email');
+        const passwordInput = document.getElementById('password');
+        const confirmPasswordInput = document.getElementById('confirmPassword');
+
+        function showError(element, message) {
+            element.classList.add('error');
+            element.nextElementSibling.textContent = message;
+            element.nextElementSibling.classList.add('show');
+        }
+
+        function clearError(element) {
+            element.classList.remove('error');
+            element.nextElementSibling.textContent = '';
+            element.nextElementSibling.classList.remove('show');
+        }
+
+        function isValidEmail(email) {
+            return /^[^\s@]+@[^\s@]+\.[^\s@]+$/.test(email);
+        }
+
+        registerForm.addEventListener('submit', async (e) => {
+            e.preventDefault();
+
+            clearError(fullNameInput);
+            clearError(emailInput);
+            clearError(passwordInput);
+            clearError(confirmPasswordInput);
+
+            let isValid = true;
+
+            if (!fullNameInput.value.trim()) {
+                showError(fullNameInput, 'Full name is required');
+                isValid = false;
+            }
+
+            if (!emailInput.value.trim()) {
+                showError(emailInput, 'Email is required');
+                isValid = false;
+            } else if (!isValidEmail(emailInput.value)) {
+                showError(emailInput, 'Please enter a valid email');
+                isValid = false;
+            }
+
+            if (!passwordInput.value) {
+                showError(passwordInput, 'Password is required');
+                isValid = false;
+            } else if (passwordInput.value.length < 6) {
+                showError(passwordInput, 'Password must be at least 6 characters');
+                isValid = false;
+            }
+
+            if (passwordInput.value !== confirmPasswordInput.value) {
+                showError(confirmPasswordInput, 'Passwords do not match');
+                isValid = false;
+            }
+
+            if (isValid) {
+                // Show loading state
+                const submitBtn = registerForm.querySelector('.submit-btn');
+                const originalText = submitBtn.textContent;
+                submitBtn.textContent = 'Creating Account...';
+                submitBtn.disabled = true;
+
+                try {
+                    // Create user with Firebase Auth (use global 'auth')
+                    const userCredential = await auth.createUserWithEmailAndPassword(
+                        emailInput.value,
+                        passwordInput.value
+                    );
+
+                    // Update profile with display name
+                    await userCredential.user.updateProfile({
+                        displayName: fullNameInput.value
+                    });
+
+                    // Save user data to Firestore (use global 'db')
+                    await db.collection('users').doc(userCredential.user.uid).set({
+                        displayName: fullNameInput.value,
+                        email: emailInput.value,
+                        role: 'member',
+                        createdAt: firebase.firestore.FieldValue.serverTimestamp(),
+                        profileComplete: false
+                    });
+
+                    // Registration successful (do nothing, keep form visible)
+
+                } catch (error) {
+                    console.error('Registration error:', error);
+                    
+                    let errorMessage = 'Registration failed. Please try again.';
+                    
+                    if (error.code === 'auth/email-already-in-use') {
+                        errorMessage = 'This email is already registered. Please use another email or sign in.';
+                        showError(emailInput, errorMessage);
+                    } else if (error.code === 'auth/invalid-email') {
+                        errorMessage = 'Invalid email address.';
+                        showError(emailInput, errorMessage);
+                    } else if (error.code === 'auth/weak-password') {
+                        errorMessage = 'Password is too weak. Please use a stronger password.';
+                        showError(passwordInput, errorMessage);
+                    } else {
+                        alert(errorMessage + '\n\nError: ' + error.message);
+                    }
+
+                    // Reset button
+                    submitBtn.textContent = originalText;
+                    submitBtn.disabled = false;
+                }
+            }
+        });
+    </script>
+</body>
+
+    </script>
+</body>
+</html>
