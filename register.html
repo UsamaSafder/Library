@@ -724,7 +724,9 @@
                         profileComplete: false
                     });
 
-                    // Registration successful (do nothing, keep form visible)
+                    // Registration successful — redirect to login page
+                    window.location.href = 'login.html';
+                    return;
 
                 } catch (error) {
                     console.error('Registration error:', error);

@@ -610,6 +610,10 @@
             border-left-color: #a0aec0;
         }
 
+        .book-card.returned .return-btn {
+            display: none;
+        }
+
         .book-cover {
             height: 160px;
             border-radius: 12px;
@@ -1388,7 +1392,7 @@
                 const daysRemaining = dueDate ? Math.ceil((dueDate - today) / (1000 * 60 * 60 * 24)) : 0;
                 const borrowDate = parseDate(book.borrowDate || book.borrowedDate);
                 const isOverdue = book.status === 'overdue' || (book.status === 'borrowed' && dueDate && daysRemaining < 0);
-                const isReturned = book.status === 'returned';
+                const isReturned = book.status === 'returned' || !!book.returnDate;
                 const daysLabel = dueDate ? (isOverdue ? Math.abs(daysRemaining) + ' days overdue' : Math.max(daysRemaining, 0) + ' days left') : 'No due date';
                 const progressPercent = isReturned ? 100 : (dueDate ? Math.max(0, Math.min(100, (14 - Math.max(0, 14 - daysRemaining)) / 14 * 100)) : 0);
                 const daysRemainingClass = dueDate ? (isOverdue ? 'danger' : (daysRemaining <= 3 ? 'warning' : '')) : '';
@@ -1476,13 +1480,6 @@
                     viewLink.className = 'view-details-link';
                     viewLink.textContent = 'View Details →';
                     right.appendChild(viewLink);
-                } else {
-                    const againBtn = document.createElement('button');
-                    againBtn.className = 'return-btn';
-                    againBtn.style.background = '#e8eaf6';
-                    againBtn.style.color = '#718096';
-                    againBtn.textContent = 'Borrow Again';
-                    right.appendChild(againBtn);
                 }
 
                 card.appendChild(left);
