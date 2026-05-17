@@ -132,32 +132,28 @@ document.addEventListener("DOMContentLoaded", async () => {
         return;
     }
 
-    // Check auth and role
-    firebase.auth().onAuthStateChanged(async (user) => {
-        if (!user) {
-            // Not logged in - redirect to login
-            window.location.href = "login.html";
+    const sessionUser = getSessionUser();
+    if (!sessionUser) {
+        window.location.href = "login.html";
+        return;
+    }
+
+    try {
+        const userDoc = await firebase.firestore().collection("users").doc(sessionUser.uid).get();
+        if (!userDoc.exists || userDoc.data().role !== "admin") {
+            pageLoader.style.display = "none";
+            accessDenied.style.display = "flex";
             return;
         }
-
-        // Check user role in Firestore
-        try {
-            const userDoc = await firebase.firestore().collection("users").doc(user.uid).get();
-            if (!userDoc.exists || userDoc.data().role !== "admin") {
-                // Not an admin - show access denied
-                pageLoader.style.display = "none";
-                accessDenied.style.display = "flex";
-                return;
-            }
-        } catch (error) {
-            console.error("Error checking admin status:", error);
-            // For demo: allow access anyway (Firebase not configured yet)
-        }
-
-        // User is admin - proceed with dashboard
+    } catch (error) {
+        console.error("Error checking admin status:", error);
         pageLoader.style.display = "none";
-        initializeDashboard(user);
-    });
+        accessDenied.style.display = "flex";
+        return;
+    }
+
+    pageLoader.style.display = "none";
+    initializeDashboard(sessionUser);
 });
 
 function initializeDashboard(user) {
@@ -524,18 +520,7 @@ function populateInventoryTable() {
 function handleLogout() {
     // Clear demo mode if active
     localStorage.removeItem('demoMode');
-    localStorage.removeItem('userEmail');
-    localStorage.removeItem('userRole');
-    localStorage.removeItem('userDisplayName');
-    localStorage.removeItem('userId');
-
-    firebase.auth().signOut().then(() => {
-        window.location.href = "login.html";
-    }).catch(error => {
-        console.error("Logout error:", error);
-        // Even if Firebase errors, redirect due to demo mode cleanup
-        window.location.href = "login.html";
-    });
+    logoutAndRedirect();
 }
 
 // ==================== TOAST NOTIFICATIONS ====================

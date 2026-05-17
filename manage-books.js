@@ -100,20 +100,19 @@ document.addEventListener("DOMContentLoaded", async () => {
         pageLoader.style.display = "none";
         initializePage();
     } else {
-        firebase.auth().onAuthStateChanged(async (user) => {
-            if (!user) {
-                window.location.href = "login.html";
-                return;
-            }
-            const userNameElem = document.getElementById("userName");
-            const userAvatarElem = document.getElementById("userAvatar");
-            const adminInitialsElem = document.getElementById("adminInitials");
-            if (userNameElem) userNameElem.textContent = user.displayName || "Admin User";
-            if (userAvatarElem) userAvatarElem.textContent = (user.displayName || "A").charAt(0).toUpperCase();
-            if (adminInitialsElem) adminInitialsElem.textContent = (user.displayName || "A").charAt(0).toUpperCase();
-            pageLoader.style.display = "none";
-            initializePage();
-        });
+        const sessionUser = getSessionUser();
+        if (!sessionUser) {
+            window.location.href = "login.html";
+            return;
+        }
+        const userNameElem = document.getElementById("userName");
+        const userAvatarElem = document.getElementById("userAvatar");
+        const adminInitialsElem = document.getElementById("adminInitials");
+        if (userNameElem) userNameElem.textContent = sessionUser.displayName || "Admin User";
+        if (userAvatarElem) userAvatarElem.textContent = (sessionUser.displayName || "A").charAt(0).toUpperCase();
+        if (adminInitialsElem) adminInitialsElem.textContent = (sessionUser.displayName || "A").charAt(0).toUpperCase();
+        pageLoader.style.display = "none";
+        initializePage();
     }
 });
 
@@ -920,11 +919,7 @@ function escapeHtml(text) {
 
 function handleLogout() {
     localStorage.removeItem('demoMode');
-    localStorage.removeItem('userEmail');
-    localStorage.removeItem('userRole');
-    localStorage.removeItem('userDisplayName');
-    localStorage.removeItem('userId');
-    window.location.href = "login.html";
+    logoutAndRedirect();
 }
 
 function showToast(type, title, message) {

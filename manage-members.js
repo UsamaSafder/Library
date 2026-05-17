@@ -153,20 +153,19 @@ document.addEventListener("DOMContentLoaded", async () => {
         pageLoader.style.display = "none";
         initializePage();
     } else {
-        firebase.auth().onAuthStateChanged(async (user) => {
-            if (!user) {
-                window.location.href = "login.html";
-                return;
-            }
-            const userNameElem = document.getElementById("userName");
-            const userAvatarElem = document.getElementById("userAvatar");
-            const adminInitialsElem = document.getElementById("adminInitials");
-            if (userNameElem) userNameElem.textContent = user.displayName || "Admin User";
-            if (userAvatarElem) userAvatarElem.textContent = (user.displayName || "A").charAt(0).toUpperCase();
-            if (adminInitialsElem) adminInitialsElem.textContent = (user.displayName || "A").charAt(0).toUpperCase();
-            pageLoader.style.display = "none";
-            initializePage();
-        });
+        const sessionUser = getSessionUser();
+        if (!sessionUser) {
+            window.location.href = "login.html";
+            return;
+        }
+        const userNameElem = document.getElementById("userName");
+        const userAvatarElem = document.getElementById("userAvatar");
+        const adminInitialsElem = document.getElementById("adminInitials");
+        if (userNameElem) userNameElem.textContent = sessionUser.displayName || "Admin User";
+        if (userAvatarElem) userAvatarElem.textContent = (sessionUser.displayName || "A").charAt(0).toUpperCase();
+        if (adminInitialsElem) adminInitialsElem.textContent = (sessionUser.displayName || "A").charAt(0).toUpperCase();
+        pageLoader.style.display = "none";
+        initializePage();
     }
 });
 
@@ -853,11 +852,16 @@ async function handleAddMember(e) {
 
     // Create member in Firestore
     try {
+        const normalizedEmail = normalizeEmail(email);
+        const passwordSalt = generatePasswordSalt();
+        const passwordHash = await hashPassword(password, passwordSalt);
+
         const newMember = {
             memberId,
             name,
-            email,
-            emailLower: email.toLowerCase(),
+            displayName: name,
+            email: normalizedEmail,
+            emailLower: normalizedEmail,
             phone,
             role,
             notes,
@@ -867,8 +871,9 @@ async function handleAddMember(e) {
             totalBorrowed: 0,
             activeBorrowings: 0,
             status: "active",
-            // When admin creates a member via this UI we don't have an auth UID.
-            // Store `authUid` as null so code can later map by email or authUid.
+            passwordSalt,
+            passwordHash,
+            authProvider: 'local',
             authUid: null,
             createdBy: (localStorage.getItem('userId') || null)
         };
@@ -928,12 +933,25 @@ async function handleEditMember(e) {
 
     // Update member in Firestore
     try {
-        await db.collection('users').doc(member.id).update({
+        const updateData = {
             name,
-            email,
+            displayName: name,
+            email: normalizeEmail(email),
+            emailLower: normalizeEmail(email),
             phone,
             notes
-        });
+        };
+
+        if (changePassword) {
+            const password = document.getElementById("editPassword").value;
+            const passwordSalt = generatePasswordSalt();
+            const passwordHash = await hashPassword(password, passwordSalt);
+            updateData.passwordSalt = passwordSalt;
+            updateData.passwordHash = passwordHash;
+            updateData.authProvider = 'local';
+        }
+
+        await db.collection('users').doc(member.id).update(updateData);
         showToast("success", "Member Updated", `${name} has been updated successfully!`);
         closeEditMemberModal();
         await loadMembers();
@@ -1153,11 +1171,7 @@ function togglePasswordVisibility(input) {
 
 function handleLogout() {
     localStorage.removeItem('demoMode');
-    localStorage.removeItem('userEmail');
-    localStorage.removeItem('userRole');
-    localStorage.removeItem('userDisplayName');
-    localStorage.removeItem('userId');
-    window.location.href = "login.html";
+    logoutAndRedirect();
 }
 
 function showToast(type, title, message) {

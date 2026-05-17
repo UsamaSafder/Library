@@ -157,64 +157,52 @@ loginForm.addEventListener('submit', async function (e) {
     loginBtn.disabled = true;
 
     try {
-        // Sign in with Firebase
-        const userCredential = await auth.signInWithEmailAndPassword(email, password);
-        const user = userCredential.user;
+        const normalizedEmail = normalizeEmail(email);
+        const userDoc = await findUserDocByEmail(normalizedEmail);
 
-        // Get user role from Firestore (create basic record if missing)
-        const userRef = db.collection('users').doc(user.uid);
-        let userDoc = await userRef.get();
-        if (!userDoc.exists) {
-            // Create a minimal user record so admin/dashboard can map by uid
-            const newUser = {
-                email: user.email || null,
-                displayName: user.displayName || null,
-                role: 'member',
-                createdAt: firebase.firestore.FieldValue.serverTimestamp(),
-                authUid: user.uid
-            };
-            await userRef.set(newUser);
-            userDoc = await userRef.get();
+        if (!userDoc) {
+            throw new Error('No user found with this email address');
         }
 
-        if (userDoc.exists) {
-            const userData = userDoc.data();
-            const role = userData.role || 'member';
-            // Store session info
-            localStorage.setItem('userEmail', user.email);
-            localStorage.setItem('userRole', role);
-            localStorage.setItem('userDisplayName', userData.displayName || user.displayName || 'User');
-            localStorage.setItem('userId', user.uid);
-            // Show success message
-            showToast('Login successful! Redirecting...', 'success');
-            setTimeout(() => {
-                if (role === 'admin') {
-                    window.location.href = 'admin.html';
-                } else {
-                    window.location.href = 'catalogue.html';
-                }
-            }, 1500);
-        } else {
-            errorBox.textContent = 'User record not found.';
-            errorBox.classList.add('show');
-            showToast('User record not found', 'error');
+        const userData = userDoc.data();
+
+        if (!userData.passwordHash || !userData.passwordSalt) {
+            throw new Error('This account must be re-registered because it was created before the new login system.');
         }
+
+        const passwordHash = await hashPassword(password, userData.passwordSalt);
+        if (passwordHash !== userData.passwordHash) {
+            throw new Error('Incorrect password. Please try again');
+        }
+
+        const role = userData.role || 'member';
+        await db.collection('users').doc(userDoc.id).set({
+            lastLoginAt: firebase.firestore.FieldValue.serverTimestamp(),
+            displayName: userData.displayName || normalizedEmail,
+            email: normalizedEmail,
+            role
+        }, { merge: true });
+
+        saveSessionUser({
+            uid: userDoc.id,
+            email: normalizedEmail,
+            displayName: userData.displayName || normalizedEmail,
+            role
+        });
+
+        showToast('Login successful! Redirecting...', 'success');
+        setTimeout(() => {
+            if (role === 'admin') {
+                window.location.href = 'admin.html';
+            } else {
+                window.location.href = 'catalogue.html';
+            }
+        }, 1500);
     } catch (error) {
-        // Handle Firebase authentication errors
         let errorMessage = 'An error occurred during login';
 
-        if (error.code === 'auth/user-not-found') {
-            errorMessage = 'No user found with this email address';
-        } else if (error.code === 'auth/wrong-password') {
-            errorMessage = 'Incorrect password. Please try again';
-        } else if (error.code === 'auth/invalid-email') {
-            errorMessage = 'Invalid email address';
-        } else if (error.code === 'auth/user-disabled') {
-            errorMessage = 'This user account has been disabled';
-        } else if (error.code === 'auth/too-many-requests') {
-            errorMessage = 'Too many failed login attempts. Please try again later';
-        } else if (error.code === 'auth/operation-not-allowed') {
-            errorMessage = 'Email/password login is not enabled';
+        if (error.message) {
+            errorMessage = error.message;
         }
 
         errorBox.textContent = errorMessage;
@@ -230,14 +218,11 @@ loginForm.addEventListener('submit', async function (e) {
 
 // ==================== SESSION RECOVERY ====================
 // Check if user is already logged in on page load
-firebase.auth().onAuthStateChanged((user) => {
-    if (user) {
-        // User is already logged in, redirect based on role
-        const role = localStorage.getItem('userRole') || 'member';
-        if (role === 'admin') {
-            window.location.href = 'admin.html';
-        } else {
-            window.location.href = 'catalogue.html';
-        }
+const existingSessionUser = getSessionUser();
+if (existingSessionUser) {
+    if (existingSessionUser.role === 'admin') {
+        window.location.href = 'admin.html';
+    } else {
+        window.location.href = 'catalogue.html';
     }
-});
+}

@@ -1104,16 +1104,26 @@
 
     <!-- MAIN SCRIPT -->
     <script>
-        const genreEmojis = {
-            "Fiction": "📖",
-            "Non-Fiction": "📚",
-            "Science": "🔬",
-            "History": "🏛️",
-            "Technology": "💻",
-            "Biography": "👤",
-            "Children": "🧒",
-            "Mystery": "🕵️"
-        };
+        // ==================== AUTH CHECK - REDIRECT TO LOGIN IF NOT AUTHENTICATED ====================
+        const currentUser = getSessionUser();
+        if (!currentUser) {
+            window.location.href = 'login.html';
+        } else {
+            initializePage();
+        }
+
+        // ==================== PAGE INITIALIZATION ====================
+        function initializePage() {
+            const genreEmojis = {
+                "Fiction": "📖",
+                "Non-Fiction": "📚",
+                "Science": "🔬",
+                "History": "🏛️",
+                "Technology": "💻",
+                "Biography": "👤",
+                "Children": "🧒",
+                "Mystery": "🕵️"
+            };
 
         const booksData = [];
         let filteredBooks = [];
@@ -1301,9 +1311,7 @@
             }
         }
 
-        firebase.auth().onAuthStateChanged((user) => {
-            updateAuthLinks(user);
-        });
+        updateAuthLinks(currentUser);
 
         hamburger.addEventListener('click', () => {
             hamburger.classList.toggle('active');
@@ -1353,12 +1361,11 @@
         });
 
         logoutBtn.addEventListener('click', () => {
-            firebase.auth().signOut().then(() => {
-                window.location.href = 'index.html';
-            });
+            logoutAndRedirect();
         });
 
         loadBooks();
+        }
     </script>
 </body>
 </html>

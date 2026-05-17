@@ -227,13 +227,11 @@
             }
         }
 
-        firebase.auth().onAuthStateChanged((user) => {
-            if (!user) {
-                window.location.href = 'login.html';
-                return;
-            }
+        if (!getSessionUser()) {
+            window.location.href = 'login.html';
+        } else {
             loadBorrowingsPageData();
-        });
+        }
     </script>
 </body>
 </html>

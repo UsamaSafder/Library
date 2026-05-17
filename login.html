@@ -816,6 +816,15 @@
         const hamburger = document.getElementById('hamburger');
         const navLinks = document.getElementById('navLinks');
 
+        const existingSessionUser = getSessionUser();
+        if (existingSessionUser) {
+            if (existingSessionUser.role === 'admin') {
+                window.location.href = 'admin.html';
+            } else {
+                window.location.href = 'catalogue.html';
+            }
+        }
+
         // ==================== HAMBURGER MENU ====================
         hamburger.addEventListener('click', () => {
             navLinks.classList.toggle('active');
@@ -964,32 +973,49 @@
             loginButton.disabled = true;
 
             try {
-                // Sign in with Firebase
-                const userCredential = await auth.signInWithEmailAndPassword(email, password);
-                const user = userCredential.user;
+                const normalizedEmail = normalizeEmail(email);
+                const userDoc = await findUserDocByEmail(normalizedEmail);
 
-                // Get user role from Firestore
-                const userDoc = await db.collection('users').doc(user.uid).get();
-
-                if (userDoc.exists) {
-                    const userData = userDoc.data();
-                    const role = userData.role || 'member';
-
-                    showToast('Login successful!', 'success');
-
-                    setTimeout(() => {
-                        if (role === 'admin') {
-                            window.location.href = 'admin.html';
-                        } else {
-                            window.location.href = 'catalogue.html';
-                        }
-                    }, 1500);
-                } else {
-                    showToast('Login successful!', 'success');
-                    setTimeout(() => {
-                        window.location.href = 'catalogue.html';
-                    }, 1500);
+                if (!userDoc) {
+                    throw new Error('Account not found. Please register first.');
                 }
+
+                const userData = userDoc.data();
+
+                if (!userData.passwordHash || !userData.passwordSalt) {
+                    throw new Error('This account must be re-registered because it was created before the new login system.');
+                }
+
+                const passwordHash = await hashPassword(password, userData.passwordSalt);
+
+                if (passwordHash !== userData.passwordHash) {
+                    throw new Error('Invalid email or password');
+                }
+
+                const role = userData.role || 'member';
+                await db.collection('users').doc(userDoc.id).set({
+                    lastLoginAt: firebase.firestore.FieldValue.serverTimestamp(),
+                    displayName: userData.displayName || normalizedEmail,
+                    email: normalizedEmail,
+                    role
+                }, { merge: true });
+
+                saveSessionUser({
+                    uid: userDoc.id,
+                    email: normalizedEmail,
+                    displayName: userData.displayName || normalizedEmail,
+                    role
+                });
+
+                showToast('Login successful!', 'success');
+
+                setTimeout(() => {
+                    if (role === 'admin') {
+                        window.location.href = 'admin.html';
+                    } else {
+                        window.location.href = 'catalogue.html';
+                    }
+                }, 1500);
 
             } catch (error) {
                 loginButton.classList.remove('loading');
@@ -997,10 +1023,8 @@
 
                 let errorMessage = 'Something went wrong';
 
-                if (error.code === 'auth/user-not-found' || error.code === 'auth/wrong-password') {
-                    errorMessage = 'Invalid email or password';
-                } else if (error.code === 'auth/too-many-requests') {
-                    errorMessage = 'Too many failed attempts. Try later.';
+                if (error.message) {
+                    errorMessage = error.message;
                 }
 
                 showToast(errorMessage, 'error');

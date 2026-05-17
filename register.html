@@ -623,17 +623,14 @@
 
         // ==================== SESSION RECOVERY ====================
         // Check if user is already logged in on page load
-        firebase.auth().onAuthStateChanged((user) => {
-            if (user) {
-                // User is already logged in, redirect based on role
-                const role = localStorage.getItem('userRole') || 'member';
-                if (role === 'admin') {
-                    window.location.href = 'admin.html';
-                } else {
-                    window.location.href = 'catalogue.html';
-                }
+        const existingSessionUser = getSessionUser();
+        if (existingSessionUser) {
+            if (existingSessionUser.role === 'admin') {
+                window.location.href = 'admin.html';
+            } else {
+                window.location.href = 'catalogue.html';
             }
-        });
+        }
 
         // Hamburger Menu
         const hamburger = document.getElementById('hamburger');
@@ -718,31 +715,42 @@
                 submitBtn.disabled = true;
 
                 try {
-                    // Create user with Firebase Auth (use global 'auth')
-                    const userCredential = await auth.createUserWithEmailAndPassword(
-                        emailInput.value,
-                        passwordInput.value
-                    );
+                    const normalizedEmail = normalizeEmail(emailInput.value);
+                    const existingUser = await db.collection('users')
+                        .where('email', '==', normalizedEmail)
+                        .limit(1)
+                        .get();
 
-                    // Update profile with display name
-                    await userCredential.user.updateProfile({
-                        displayName: fullNameInput.value
-                    });
+                    if (!existingUser.empty) {
+                        showError(emailInput, 'This email is already registered. Please sign in.');
+                        submitBtn.textContent = originalText;
+                        submitBtn.disabled = false;
+                        return;
+                    }
 
-                    // Save user data to Firestore (use global 'db')
-                    await db.collection('users').doc(userCredential.user.uid).set({
-                        displayName: fullNameInput.value,
-                        email: emailInput.value,
+                    const userId = generateUserId();
+                    const passwordSalt = generatePasswordSalt();
+                    const passwordHash = await hashPassword(passwordInput.value, passwordSalt);
+
+                    // Save user data to Firestore
+                    await db.collection('users').doc(userId).set({
+                        displayName: fullNameInput.value.trim(),
+                        email: normalizedEmail,
                         role: 'member',
+                        passwordSalt,
+                        passwordHash,
+                        authProvider: 'local',
                         createdAt: firebase.firestore.FieldValue.serverTimestamp(),
                         profileComplete: false
                     });
 
                     // Store session info
-                    localStorage.setItem('userEmail', emailInput.value);
-                    localStorage.setItem('userRole', 'member');
-                    localStorage.setItem('userDisplayName', fullNameInput.value);
-                    localStorage.setItem('userId', userCredential.user.uid);
+                    saveSessionUser({
+                        uid: userId,
+                        email: normalizedEmail,
+                        displayName: fullNameInput.value.trim(),
+                        role: 'member'
+                    });
 
                     // Show success message
                     alert('Account created successfully! You will be redirected to the catalogue.');

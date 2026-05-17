@@ -1540,15 +1540,12 @@
     <!-- MAIN SCRIPT -->
     <script>
         // ==================== AUTH CHECK - REDIRECT TO LOGIN IF NOT AUTHENTICATED ====================
-        firebase.auth().onAuthStateChanged((user) => {
-            if (!user) {
-                // User not logged in, redirect to login page
-                window.location.href = 'login.html';
-                return;
-            }
-            // User is logged in, initialize page
+        let currentUser = getSessionUser();
+        if (!currentUser) {
+            window.location.href = 'login.html';
+        } else {
             initializePage();
-        });
+        }
 
         // ==================== PAGE INITIALIZATION ====================
         function initializePage() {
@@ -1564,7 +1561,19 @@
         };
 
         let currentBook = null;
-        let currentUser = null;
+        currentUser = currentUser || getSessionUser();
+
+        const loginLink = document.getElementById('loginLink');
+        const registerLink = document.getElementById('registerLink');
+        const myBooksLink = document.getElementById('myBooksLink');
+        const logoutLink = document.getElementById('logoutLink');
+
+        if (currentUser) {
+            if (loginLink) loginLink.style.display = 'none';
+            if (registerLink) registerLink.style.display = 'none';
+            if (myBooksLink) myBooksLink.style.display = 'list-item';
+            if (logoutLink) logoutLink.style.display = 'list-item';
+        }
 
         function getBookIdFromURL() {
             const params = new URLSearchParams(window.location.search);
@@ -1887,16 +1896,11 @@
             });
         });
 
-        firebase.auth().onAuthStateChanged((user) => {
-            currentUser = user;
-            updateBorrowSection();
-        });
+        updateBorrowSection();
 
         document.querySelectorAll('.navbar-logout-btn').forEach(btn => {
             btn.addEventListener('click', () => {
-                firebase.auth().signOut().then(() => {
-                    window.location.href = 'login.html';
-                });
+                logoutAndRedirect();
             });
         });
 

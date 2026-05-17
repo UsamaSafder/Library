@@ -2,15 +2,11 @@
 // Assumes firebase.initializeApp is already called in firebase-config.js
 
 // ==================== AUTH CHECK - REDIRECT TO LOGIN IF NOT AUTHENTICATED ====================
-firebase.auth().onAuthStateChanged((user) => {
-    if (!user) {
-        // User not logged in, redirect to login page
-        window.location.href = 'login.html';
-        return;
-    }
-    // User is logged in, initialize page
-    initializePage();
-});
+if (!getSessionUser()) {
+  window.location.href = 'login.html';
+} else {
+  initializePage();
+}
 
 // ==================== DOM ELEMENTS ====================
 const statBooks = document.querySelector('.stat-item .stat-number:nth-child(1)');

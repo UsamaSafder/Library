@@ -1293,25 +1293,24 @@
 
     <script>
         // ==================== AUTH CHECK - REDIRECT TO LOGIN IF NOT AUTHENTICATED ====================
-        let currentUser = null;
-        
-        firebase.auth().onAuthStateChanged((user) => {
-            if (!user) {
-                // User not logged in, redirect to login page
-                window.location.href = 'login.html';
-                return;
+        let currentUser = getSessionUser();
+        const authGuard = document.getElementById('authGuard');
+        if (!currentUser) {
+            if (authGuard) {
+                authGuard.style.display = 'flex';
             }
-            // User is logged in, set current user and initialize page
-            currentUser = user;
+        } else {
+            if (authGuard) {
+                authGuard.style.display = 'none';
+            }
             initializePage();
-        });
+        }
 
         // ==================== PAGE INITIALIZATION ====================
         function initializePage() {
         let currentFilter = 'all';
         let selectedBorrowingId = null;
 
-        const authGuard = document.getElementById('authGuard');
         const hamburger = document.getElementById('hamburger');
         const navbarLinks = document.getElementById('navbarLinks');
         const logoutBtn = document.getElementById('logoutBtn');
@@ -1657,9 +1656,7 @@
         loadBorrowings();
 
         logoutBtn.addEventListener('click', () => {
-            firebase.auth().signOut().then(() => {
-                window.location.href = 'login.html';
-            });
+            logoutAndRedirect();
         });
         }
     </script>

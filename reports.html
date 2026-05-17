@@ -180,13 +180,11 @@
                 console.error('Report stats load failed:', error);
             }
         }
-        firebase.auth().onAuthStateChanged((user) => {
-            if (!user) {
-                window.location.href = 'login.html';
-                return;
-            }
+        if (!getSessionUser()) {
+            window.location.href = 'login.html';
+        } else {
             loadReportStats();
-        });
+        }
     </script>
 </body>
 </html>
